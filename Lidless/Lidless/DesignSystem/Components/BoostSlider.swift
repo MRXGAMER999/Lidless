@@ -12,6 +12,9 @@ struct BoostSlider: View {
     @Binding var position: Double
     let scale: BrightnessScale
     let label: Text
+    /// Called with true when the pointer presses the track and false when it
+    /// lets go, like `Slider`'s. Arrow keys and VoiceOver don't call it.
+    var onEditingChanged: (Bool) -> Void = { _ in }
 
     /// Arrow keys move this many positions (about 3% of the track).
     private let keyboardStep = 5.0
@@ -21,7 +24,7 @@ struct BoostSlider: View {
             HStack(spacing: 10) {
                 GlyphView(glyph: .sunSmall, size: 14, lineWidth: 2)
                     .foregroundStyle(Palette.text4)
-                BoostTrack(position: $position, scale: scale)
+                BoostTrack(position: $position, scale: scale, onEditingChanged: onEditingChanged)
                 GlyphView(glyph: .sun, size: 18, lineWidth: 1.8)
                     .foregroundStyle(Palette.text4)
             }
@@ -57,6 +60,11 @@ struct BoostSlider: View {
 private struct BoostTrack: View {
     @Binding var position: Double
     let scale: BrightnessScale
+    let onEditingChanged: (Bool) -> Void
+    /// The pointer holds the track. SwiftUI resets it when the drag ends or is
+    /// cancelled, so a release is never missed. A thumb held still writes no
+    /// position, so this is the only sign the user still has it.
+    @GestureState private var isDragging = false
 
     var body: some View {
         GeometryReader { proxy in
@@ -79,6 +87,7 @@ private struct BoostTrack: View {
             .contentShape(Rectangle())
             .gesture(
                 DragGesture(minimumDistance: 0)
+                    .updating($isDragging) { _, isDragging, _ in isDragging = true }
                     .onChanged { value in
                         guard width > 0 else { return }
                         let newPosition = scale.position(atTrackFraction: value.location.x / width)
@@ -88,6 +97,24 @@ private struct BoostTrack: View {
             )
         }
         .frame(height: 24)
+        .modifier(ChangeReporter(value: isDragging, action: onEditingChanged))
+        // Replaced mid-drag (Desk Mode turning on), the track gets no release.
+        .onDisappear { if isDragging { onEditingChanged(false) } }
+    }
+}
+
+/// Calls `action` with each new value, not the first. The two-parameter
+/// `onChange(of:)` is macOS 14+; the one-parameter form covers 12–13.
+private struct ChangeReporter<Value: Equatable>: ViewModifier {
+    let value: Value
+    let action: (Value) -> Void
+
+    func body(content: Content) -> some View {
+        if #available(macOS 14, *) {
+            content.onChange(of: value) { _, newValue in action(newValue) }
+        } else {
+            content.onChange(of: value) { newValue in action(newValue) }
+        }
     }
 }
 

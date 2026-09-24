@@ -4,7 +4,8 @@ import LidlessCore
 
 /// What the Mac looks like right now: lid, power, heat and connected displays.
 ///
-/// Phase 2 feeds this from IOKit and CoreGraphics; until then it holds sample data.
+/// A normal launch fills this from the live system through `SystemController`;
+/// sample launches, previews and tests hold `SampleData` instead.
 final class SystemStore: ObservableObject {
     @Published var lid: LidState
     @Published var power: PowerSource
@@ -26,5 +27,19 @@ final class SystemStore: ObservableObject {
         self.thermal = thermal
         self.builtIn = builtIn
         self.externals = externals
+    }
+
+    // `@Published` emits even when assigned an equal value, so unchanged fields
+    // are skipped and a repeated read doesn't redraw the popover.
+
+    func update(lid: LidState, power: PowerSource, thermal: ThermalLevel) {
+        if self.lid != lid { self.lid = lid }
+        if self.power != power { self.power = power }
+        if self.thermal != thermal { self.thermal = thermal }
+    }
+
+    func update(displays inventory: DisplayInventory) {
+        if builtIn != inventory.builtIn { builtIn = inventory.builtIn }
+        if externals != inventory.externals { externals = inventory.externals }
     }
 }

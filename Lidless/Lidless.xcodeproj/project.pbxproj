@@ -96,6 +96,11 @@
 			path = LidlessCoreTests;
 			sourceTree = "<group>";
 		};
+		E23489D0306512A0009D3F48 /* TestSupport */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = TestSupport;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -137,6 +142,7 @@
 				E2348895306511D4009D3F48 /* LidlessUITests */,
 				E23488A930651238009D3F48 /* LidlessCore */,
 				E23488B630651238009D3F48 /* LidlessCoreTests */,
+				E23489D0306512A0009D3F48 /* TestSupport */,
 				E234887C306511D2009D3F48 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -201,6 +207,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				E234888B306511D4009D3F48 /* LidlessTests */,
+				E23489D0306512A0009D3F48 /* TestSupport */,
 			);
 			name = LidlessTests;
 			productName = LidlessTests;
@@ -263,6 +270,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				E23488B630651238009D3F48 /* LidlessCoreTests */,
+				E23489D0306512A0009D3F48 /* TestSupport */,
 			);
 			name = LidlessCoreTests;
 			productName = LidlessCoreTests;

@@ -129,6 +129,30 @@
         }
       }
     },
+    "Display.Name.BuiltIn" : {
+      "comment" : "Name of the Mac's own screen when macOS doesn't report one, for example while the lid is closed",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Built-in Display"
+          }
+        }
+      }
+    },
+    "Display.Name.Unknown" : {
+      "comment" : "Name of an external display that doesn't report a name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Display"
+          }
+        }
+      }
+    },
     "EXTERNAL DISPLAYS" : {
       "comment" : "Section heading in the popover, uppercase by design"
     },

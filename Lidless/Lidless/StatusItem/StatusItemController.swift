@@ -22,6 +22,9 @@ final class StatusItemController: NSObject, NSWindowDelegate {
     let statusItem: NSStatusItem
     private(set) var presentation: Presentation = .hidden
     var isShown: Bool { presentation != .hidden }
+    /// Called with true just before the panel appears and false once it is
+    /// dismissed, so live data is read only while someone is looking.
+    var onVisibilityChange: ((Bool) -> Void)?
 
     private let panel = StatusPanel()
     private let hostingView: StatusPanelHostingView
@@ -114,6 +117,11 @@ final class StatusItemController: NSObject, NSWindowDelegate {
     }
 
     /// The glyph the item should show, published whenever it changes.
+    ///
+    /// Live reads never go past position 100, so in Phase 2 the Boost glyph
+    /// shows only while the user holds the slider in the Boost range (store
+    /// only; a read moves it back 2 s after release, even once the popover
+    /// has closed).
     static func iconStates(model: AppModel, iconShowsState: AnyPublisher<Bool, Never>) -> AnyPublisher<MenuBarIconState, Never> {
         // @Published emits before the property changes, so work from the emitted values.
         Publishers.CombineLatest4(
@@ -166,6 +174,10 @@ final class StatusItemController: NSObject, NSWindowDelegate {
 
     private func present(_ mode: Presentation) {
         let wasShown = isShown
+        if !wasShown {
+            // First, so a fresh brightness read lands before the size is measured.
+            onVisibilityChange?(true)
+        }
         fadeGeneration += 1
         presentation = mode
         if !wasShown {
@@ -194,6 +206,7 @@ final class StatusItemController: NSObject, NSWindowDelegate {
         guard isShown else { return }
         let wasLegacy = presentation == .legacy
         presentation = .hidden
+        onVisibilityChange?(false)
         removeMonitors()
         removeObservers()
         if wasLegacy { clearLegacyHighlight() }

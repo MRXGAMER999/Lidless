@@ -8,6 +8,9 @@ import LidlessCore
 /// `setOn(_:)` only changes the published state.
 final class DeskModeStore: ObservableObject {
     @Published private(set) var state: DeskModeState
+    /// Why Desk Mode can't be used right now; nil when it can. Kept apart from
+    /// `state` so turning Desk Mode off lands on the current reason.
+    private(set) var unavailableReason: DeskModeState.UnavailableReason?
     @Published var panicShortcut: KeyShortcut {
         didSet { refreshPanicKeys() }
     }
@@ -26,6 +29,7 @@ final class DeskModeStore: ObservableObject {
         keyLabel: @escaping (KeyShortcut) -> String = { $0.displayKeyLabel }
     ) {
         self.state = state
+        if case .unavailable(let reason) = state { unavailableReason = reason }
         self.panicShortcut = panicShortcut
         self.keyLabel = keyLabel
         panicKeys = ShortcutLabels(panicShortcut, keyLabel: keyLabel(panicShortcut))
@@ -38,15 +42,23 @@ final class DeskModeStore: ObservableObject {
         set { setOn(newValue) }
     }
 
+    /// Phase 2: only changes the published state, in live mode too; Phase 3
+    /// connects it to the display controller and safety net.
     func setOn(_ on: Bool) {
         guard state.isAvailable, on != state.isOn else { return }
-        state = on ? .on(since: .now, trigger: .manual) : .off
+        state = on ? .on(since: .now, trigger: .manual) : DeskModeState.off.applying(availability: unavailableReason)
     }
 
-    /// Used by the system layer when availability changes (displays plugged in or out).
     func update(_ newState: DeskModeState) {
         guard newState != state else { return }
         state = newState
+    }
+
+    /// Used by the system layer whenever lid, displays or support change.
+    /// `.on` and `.switching` stay put: the Desk Mode controller owns them.
+    func applyAvailability(_ reason: DeskModeState.UnavailableReason?) {
+        unavailableReason = reason
+        update(state.applying(availability: reason))
     }
 
     func keyboardLayoutDidChange() {

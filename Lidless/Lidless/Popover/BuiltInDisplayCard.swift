@@ -70,7 +70,8 @@ private struct BuiltInBrightnessControls: View {
             BoostSlider(
                 position: $brightness.position,
                 scale: scale,
-                label: Text("Built-in display brightness", comment: "VoiceOver label of the built-in brightness slider")
+                label: Text("Built-in display brightness", comment: "VoiceOver label of the built-in brightness slider"),
+                onEditingChanged: { brightness.setTracking($0) }
             )
             if scale.isBoosted(brightness.position) {
                 Callout(

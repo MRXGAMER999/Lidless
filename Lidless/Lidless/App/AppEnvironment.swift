@@ -8,8 +8,9 @@ nonisolated struct AppEnvironment: Equatable, Sendable {
     var isRunningForPreviews: Bool
     /// `LIDLESS_SAFE_MODE=1`: start without any UI.
     var isSafeMode: Bool
-    /// `-LidlessSample deskSetup|onTheGo|deskModeOn`.
-    var sample: SampleScenario
+    /// `-LidlessSample deskSetup|onTheGo|deskModeOn`; nil when absent. A present
+    /// flag with an unknown or missing value means deskSetup.
+    var sample: SampleScenario?
     /// `-LidlessShowPopover YES`: open the popover right after launch, for screenshots.
     var showsPopoverAtLaunch: Bool
 
@@ -17,11 +18,25 @@ nonisolated struct AppEnvironment: Equatable, Sendable {
     /// host, preview host or safe-mode launch has no visible side effects.
     var showsUserInterface: Bool { !isRunningTests && !isRunningForPreviews && !isSafeMode }
 
+    /// Where the stores get their data. Only a normal launch with UI reads the
+    /// system; tests (both test targets are hosted in the app), previews and
+    /// safe mode read nothing from it.
+    var dataSource: DataSource {
+        sample.map(DataSource.sample) ?? (showsUserInterface ? .live : .sample(.deskSetup))
+    }
+
+    nonisolated enum DataSource: Equatable, Sendable {
+        case live
+        case sample(SampleScenario)
+    }
+
     init(environment: [String: String], arguments: [String]) {
         isRunningTests = environment["XCTestConfigurationFilePath"] != nil
         isRunningForPreviews = environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
         isSafeMode = environment["LIDLESS_SAFE_MODE"] == "1"
-        sample = Self.value(after: "-LidlessSample", in: arguments).flatMap(SampleScenario.init(rawValue:)) ?? .deskSetup
+        sample = arguments.contains("-LidlessSample")
+            ? Self.value(after: "-LidlessSample", in: arguments).flatMap(SampleScenario.init(rawValue:)) ?? .deskSetup
+            : nil
         showsPopoverAtLaunch = Self.value(after: "-LidlessShowPopover", in: arguments).map(Self.isTrue) ?? false
     }
 
@@ -40,7 +55,7 @@ nonisolated struct AppEnvironment: Equatable, Sendable {
     }
 }
 
-/// The design canvas states the app can start in until real hardware data arrives.
+/// The design canvas states the app can start in instead of live data.
 nonisolated enum SampleScenario: String, CaseIterable, Sendable {
     case deskSetup
     case onTheGo

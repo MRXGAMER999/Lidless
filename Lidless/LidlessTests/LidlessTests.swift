@@ -18,6 +18,12 @@ struct AppEnvironmentTests {
         #expect(delegate.statusItemController == nil)
     }
 
+    @Test func `the hosting app created no system controller`() throws {
+        let delegate = try #require(NSApp.delegate as? AppDelegate)
+        #expect(delegate.systemController == nil)
+        #expect(AppEnvironment.current.dataSource == .sample(.deskSetup))
+    }
+
     @Test(arguments: [
         (["LIDLESS_SAFE_MODE": "1"], false),
         (["LIDLESS_SAFE_MODE": "0"], true),
@@ -30,15 +36,29 @@ struct AppEnvironmentTests {
     }
 
     @Test(arguments: [
-        (["Lidless", "-LidlessSample", "onTheGo"], SampleScenario.onTheGo),
+        (["Lidless", "-LidlessSample", "onTheGo"], SampleScenario?.some(.onTheGo)),
         (["Lidless", "-LidlessSample", "deskModeOn"], .deskModeOn),
         (["Lidless", "-LidlessSample", "deskSetup"], .deskSetup),
         (["Lidless", "-LidlessSample", "nonsense"], .deskSetup),
         (["Lidless", "-LidlessSample"], .deskSetup),
-        (["Lidless"], .deskSetup),
+        (["Lidless", "-LidlessSample", "-LidlessShowPopover", "YES"], .deskSetup),
+        (["Lidless"], nil),
     ])
-    func `sample comes from the launch argument`(arguments: [String], expected: SampleScenario) {
+    func `sample comes from the launch argument`(arguments: [String], expected: SampleScenario?) {
         #expect(AppEnvironment(environment: [:], arguments: arguments).sample == expected)
+    }
+
+    @Test(arguments: [
+        ([:], ["Lidless"], AppEnvironment.DataSource.live),
+        (["LIDLESS_SAFE_MODE": "1"], ["Lidless"], .sample(.deskSetup)),
+        (["XCTestConfigurationFilePath": "/tmp/x.xctestconfiguration"], ["Lidless"], .sample(.deskSetup)),
+        (["XCODE_RUNNING_FOR_PREVIEWS": "1"], ["Lidless"], .sample(.deskSetup)),
+        ([:], ["Lidless", "-LidlessSample", "onTheGo"], .sample(.onTheGo)),
+        ([:], ["Lidless", "-LidlessSample"], .sample(.deskSetup)),
+        (["XCODE_RUNNING_FOR_PREVIEWS": "1"], ["Lidless", "-LidlessSample", "deskModeOn"], .sample(.deskModeOn)),
+    ])
+    func `data source is live only for a normal UI launch`(environment: [String: String], arguments: [String], expected: AppEnvironment.DataSource) {
+        #expect(AppEnvironment(environment: environment, arguments: arguments).dataSource == expected)
     }
 
     @Test func `popover opens at launch only when asked`() {

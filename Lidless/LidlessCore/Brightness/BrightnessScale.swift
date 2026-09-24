@@ -17,12 +17,15 @@ public struct BrightnessScale: Sendable, Equatable {
     public let normalMaxNits: Double
     /// Brightest white Boost may reach, in nits (Settings › Brightness). At least `normalMaxNits`.
     public let ceilingNits: Double
+    /// The panel's own slider-to-nits curve for the normal range; linear when nil.
+    public let curve: PanelBrightnessCurve?
 
-    public init(normalMaxNits: Double, ceilingNits: Double) {
+    public init(normalMaxNits: Double, ceilingNits: Double, curve: PanelBrightnessCurve? = nil) {
         // A failed panel read (0, NaN, infinity) must not reach the readouts:
         // Int(_:) traps on a NaN or infinite percentage.
         self.normalMaxNits = normalMaxNits.isFinite ? max(1, normalMaxNits) : 1
         self.ceilingNits = ceilingNits.isFinite ? max(self.normalMaxNits, ceilingNits) : self.normalMaxNits
+        self.curve = curve
     }
 
     /// Whether this scale has any room above normal brightness.
@@ -30,7 +33,7 @@ public struct BrightnessScale: Sendable, Equatable {
 
     /// This scale, or the same scale with no Boost range when Boost isn't allowed.
     public func allowingBoost(_ allowed: Bool) -> BrightnessScale {
-        allowed ? self : BrightnessScale(normalMaxNits: normalMaxNits, ceilingNits: normalMaxNits)
+        allowed ? self : BrightnessScale(normalMaxNits: normalMaxNits, ceilingNits: normalMaxNits, curve: curve)
     }
 
     /// Clamps a slider position into 0...150, or 0...100 when there is no room to boost.
@@ -59,14 +62,19 @@ public struct BrightnessScale: Sendable, Equatable {
     public func nits(_ position: Double) -> Double {
         let p = clamp(position)
         if p <= Self.normalLimit {
-            return p / Self.normalLimit * normalMaxNits
+            let level = p / Self.normalLimit
+            // Scaled so the end of the curve lands exactly on normalMaxNits.
+            guard let curve else { return level * normalMaxNits }
+            return curve.nits(atLevel: level) / curve.maxNits * normalMaxNits
         }
         return normalMaxNits + boostProgress(p) * (ceilingNits - normalMaxNits)
     }
 
-    /// Brightness as a percentage of normal maximum: 0...100, then above 100 while boosted.
+    /// Brightness as a percentage: the slider position up to 100, so it matches
+    /// Control Center, then white above normal maximum while boosted.
     public func percent(_ position: Double) -> Double {
-        nits(position) / normalMaxNits * 100
+        let p = clamp(position)
+        return p <= Self.normalLimit ? p : nits(p) / normalMaxNits * 100
     }
 
     /// Multiplier Boost applies on top of full native brightness (1 when not boosted).
@@ -130,5 +138,26 @@ extension BrightnessScale {
     /// The "≈ N nits" figure, rounded to the nearest 10 because it is an estimate.
     public func displayNits(_ position: Double) -> Int {
         Int((nits(position) / 10).rounded()) * 10
+    }
+}
+
+// MARK: - Live panel
+
+extension BrightnessScale {
+    /// Normal maximum when the panel doesn't publish one.
+    public static let fallbackNormalMaxNits = 500.0
+    /// Boost ceiling when the panel doesn't publish its outdoor maximum.
+    public static let fallbackCeilingNits = 1000.0
+
+    /// The scale for this Mac's built-in panel.
+    ///
+    /// - Parameters:
+    ///   - panel: Constants read from the device tree.
+    ///   - canBoost: The panel is XDR and no reference preset locks it.
+    ///   - ceilingSetting: Settings › Brightness ceiling in nits; nil for the panel's own limit.
+    public init(panel: PanelBrightnessInfo, canBoost: Bool, ceilingSetting: Double? = nil) {
+        let normal = panel.userMaxNits ?? Self.fallbackNormalMaxNits
+        let ceiling = min(ceilingSetting ?? .infinity, panel.outdoorMaxNits ?? Self.fallbackCeilingNits)
+        self.init(normalMaxNits: normal, ceilingNits: canBoost ? ceiling : normal, curve: panel.curve)
     }
 }

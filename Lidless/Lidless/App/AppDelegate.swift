@@ -6,12 +6,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// The one model for the whole app. Views get it passed down; none create stores.
     let model: AppModel
     private(set) var statusItemController: StatusItemController?
+    /// Feeds `model` from the system; only a normal launch has one.
+    private(set) var systemController: SystemController?
 
     private let log = Logger(subsystem: "io.github.mrxgamer999.Lidless", category: "App")
 
     init(environment: AppEnvironment = .current) {
         self.environment = environment
-        model = environment.sample.makeModel()
+        switch environment.dataSource {
+        case .live: model = AppModel()
+        case .sample(let scenario): model = scenario.makeModel()
+        }
         super.init()
     }
 
@@ -24,11 +29,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             log.info("Started without UI (tests, previews or safe mode)")
             return
         }
+        if environment.dataSource == .live {
+            // Before the status item exists, so its first frame is already live.
+            let controller = SystemController.live(model: model)
+            controller.start()
+            systemController = controller
+        }
         let actions = PopoverActions(
             openSettings: { [weak self] tab in self?.openSettings(tab) },
             quit: { [weak self] in self?.quit() }
         )
-        statusItemController = StatusItemController(model: model, actions: actions)
+        let statusItemController = StatusItemController(model: model, actions: actions)
+        statusItemController.onVisibilityChange = { [weak self] shown in
+            shown ? self?.systemController?.popoverWillShow() : self?.systemController?.popoverDidClose()
+        }
+        self.statusItemController = statusItemController
         if environment.showsPopoverAtLaunch {
             // Give the menu bar a moment to place the new item, so the panel opens under it.
             perform(#selector(openPopoverAfterLaunch), with: nil, afterDelay: 0.5)
@@ -40,6 +55,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        systemController?.stop()
         statusItemController?.prepareForTermination()
     }
 
