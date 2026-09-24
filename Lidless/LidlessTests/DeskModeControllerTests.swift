@@ -608,6 +608,196 @@ struct DeskModeControllerTests {
         #expect(rig.log.take().filter(\.touchesDisplay) == [.disable(1, uuid: builtInUUID, method: .disconnect), .enable(1)])
     }
 
+    // MARK: Forced prompt ("Test the safety net", intents before onboarding)
+
+    /// "Ask before keeping it off" switched off, so only a forced prompt asks.
+    private static func withoutAsking() -> DeskModeRig {
+        var settings = DeskModeSettings.defaults
+        settings.askBeforeKeeping = false
+        return DeskModeRig(settings: settings)
+    }
+
+    @Test func `testing the safety net asks even with asking switched off`() {
+        let rig = Self.withoutAsking()
+        defer { rig.cleanUp() }
+        rig.connect()
+        rig.controller.testSafetyNet()
+        #expect(rig.builtIn.pendingDisables == 1)
+        #expect(rig.controller.machine.configuration.askBeforeKeeping)
+        _ = rig.log.take()
+
+        rig.builtIn.finishDisable(true)
+        #expect(rig.log.take() == [.deadline(1_015), .show(deadline: 1_015, total: 15, onDisplayUUID: lgUUID)])
+        #expect(rig.model.deskMode.isConfirming)
+        // Once the prompt is up the force is spent; the setting is back.
+        #expect(!rig.controller.machine.configuration.askBeforeKeeping)
+    }
+
+    @Test func `requestTurnOn forcing the prompt is testSafetyNet`() {
+        let rig = Self.withoutAsking()
+        defer { rig.cleanUp() }
+        rig.connect()
+        rig.controller.requestTurnOn(forcePrompt: true)
+        rig.builtIn.finishDisable(true)
+        #expect(rig.confirmation.isShown)
+    }
+
+    @Test func `requestTurnOn without forcing follows the setting`() {
+        let rig = Self.withoutAsking()
+        defer { rig.cleanUp() }
+        rig.connect()
+        rig.controller.requestTurnOn(forcePrompt: false)
+        #expect(!rig.controller.machine.configuration.askBeforeKeeping)
+        _ = rig.log.take()
+        rig.builtIn.finishDisable(true)
+        #expect(rig.log.take() == [.writeMarker(.active)])
+        #expect(!rig.confirmation.isShown)
+        #expect(!rig.model.deskMode.isConfirming)
+    }
+
+    /// After the forced engage ended some way, a plain turn-on doesn't ask.
+    private static func expectPlainTurnOnDoesNotAsk(_ rig: DeskModeRig) {
+        #expect(!rig.controller.machine.configuration.askBeforeKeeping)
+        rig.connect()
+        rig.controller.setOn(true)
+        rig.builtIn.finishDisable(true)
+        #expect(!rig.confirmation.isShown)
+        #expect(rig.controller.machine.phase != .idle)
+    }
+
+    @Test func `a refused test doesn't leave the prompt forced`() {
+        let rig = Self.withoutAsking()
+        defer { rig.cleanUp() }
+        // No external: refused.
+        rig.connect([DisplayFixtures.builtIn])
+        rig.controller.availabilityDidChange(.needsDisplay)
+        rig.controller.testSafetyNet()
+        #expect(rig.builtIn.pendingDisables == 0)
+        rig.controller.availabilityDidChange(nil)
+        Self.expectPlainTurnOnDoesNotAsk(rig)
+    }
+
+    @Test func `a test not ready to engage doesn't leave the prompt forced`() {
+        let rig = Self.withoutAsking()
+        defer { rig.cleanUp() }
+        // No reading yet: not ready.
+        rig.controller.testSafetyNet()
+        #expect(rig.builtIn.pendingDisables == 0)
+        Self.expectPlainTurnOnDoesNotAsk(rig)
+    }
+
+    @Test func `a test while Desk Mode is busy forces nothing`() {
+        let rig = Self.withoutAsking()
+        defer { rig.cleanUp() }
+        rig.connect()
+        rig.controller.setOn(true)
+        rig.controller.testSafetyNet()
+        #expect(rig.builtIn.pendingDisables == 1)
+        #expect(!rig.controller.machine.configuration.askBeforeKeeping)
+        _ = rig.log.take()
+        rig.builtIn.finishDisable(true)
+        #expect(rig.log.take() == [.writeMarker(.active)])
+    }
+
+    @Test func `a failed test disable ends the force`() {
+        let rig = Self.withoutAsking()
+        defer { rig.cleanUp() }
+        rig.connect()
+        rig.controller.testSafetyNet()
+        rig.builtIn.finishDisable(false)
+        rig.builtIn.finishEnable(true)
+        #expect(rig.controller.machine.phase == .idle)
+        #expect(!rig.controller.machine.configuration.askBeforeKeeping)
+    }
+
+    @Test func `a test disable that times out ends the force`() {
+        let rig = Self.withoutAsking()
+        defer { rig.cleanUp() }
+        rig.connect()
+        rig.controller.testSafetyNet()
+        rig.advance(12)
+        rig.controller.tick()
+        let restoring = if case .restoring(.engageFailed, _, _) = rig.controller.machine.phase { true } else { false }
+        #expect(restoring)
+        #expect(!rig.controller.machine.configuration.askBeforeKeeping)
+    }
+
+    @Test func `panic during a test ends the force`() {
+        let rig = Self.withoutAsking()
+        defer { rig.cleanUp() }
+        rig.connect()
+        rig.controller.testSafetyNet()
+        rig.controller.panic()
+        #expect(!rig.controller.machine.configuration.askBeforeKeeping)
+        rig.builtIn.finishDisable(true)
+        rig.builtIn.finishEnable(true)
+        #expect(!rig.confirmation.isShown)
+    }
+
+    @Test func `quitting during a test ends the force`() {
+        let rig = Self.withoutAsking()
+        defer { rig.cleanUp() }
+        rig.connect()
+        rig.controller.testSafetyNet()
+        rig.controller.terminate()
+        #expect(!rig.controller.machine.configuration.askBeforeKeeping)
+        #expect(rig.log.take().contains(.enableNow(1)))
+    }
+
+    @Test func `changing settings during a test keeps the prompt forced`() {
+        let rig = Self.withoutAsking()
+        defer { rig.cleanUp() }
+        rig.connect()
+        rig.controller.testSafetyNet()
+        rig.model.preferences.deskMode.keepAfterWake = true
+        rig.model.preferences.deskMode.askBeforeKeeping = true
+        rig.model.preferences.deskMode.askBeforeKeeping = false
+        #expect(rig.controller.machine.configuration.askBeforeKeeping)
+        #expect(rig.controller.machine.configuration.keepAfterWake)
+
+        rig.builtIn.finishDisable(true)
+        #expect(rig.confirmation.isShown)
+        #expect(!rig.controller.machine.configuration.askBeforeKeeping)
+    }
+
+    // MARK: Whether the prompt is up
+
+    @Test func `isConfirming follows the prompt`() {
+        let rig = DeskModeRig()
+        rig.connect()
+        #expect(!rig.model.deskMode.isConfirming)
+        rig.controller.setOn(true)
+        #expect(!rig.model.deskMode.isConfirming)
+        rig.builtIn.finishDisable(true)
+        #expect(rig.model.deskMode.isConfirming)
+        rig.confirmation.pressKeep()
+        #expect(!rig.model.deskMode.isConfirming)
+        #expect(rig.model.deskMode.state == .on(since: DeskModeRig.since, trigger: .manual))
+    }
+
+    @Test func `isConfirming is already set when the state turns on`() {
+        let rig = DeskModeRig()
+        rig.connect()
+        var seen: [Bool] = []
+        let subscription = rig.model.deskMode.$state.dropFirst().sink { [deskMode = rig.model.deskMode] state in
+            // @Published sends before storing; isConfirming is stored by then.
+            if case .on = state { seen.append(deskMode.isConfirming) }
+        }
+        rig.controller.setOn(true)
+        rig.builtIn.finishDisable(true)
+        subscription.cancel()
+        #expect(seen == [true])
+    }
+
+    @Test func `isConfirming clears when the prompt is answered with Turn Back On`() {
+        let rig = DeskModeRig()
+        rig.connect()
+        rig.controller.setOn(true)
+        rig.builtIn.finishDisable(true)
+        rig.confirmation.pressRevert()
+        #expect(!rig.model.deskMode.isConfirming)
+    }
+
     // MARK: SystemController hookup
 
     @Test func `the system controller forwards readings, events and availability`() {
@@ -685,6 +875,30 @@ struct PreferencesStoreTests {
         let store = PreferencesStore(defaults: defaults)
         #expect(store.deskMode == .defaults)
         #expect(store.shortcuts == .defaults)
+    }
+
+    @Test func `general settings survive a relaunch`() throws {
+        let name = "PreferencesStoreTests.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: name))
+        defer { defaults.removePersistentDomain(forName: name) }
+
+        let store = PreferencesStore(defaults: defaults)
+        #expect(store.general == .defaults)
+        store.general.onboardingCompleted = true
+        store.general.iconShowsState = false
+
+        let reloaded = PreferencesStore(defaults: defaults)
+        #expect(reloaded.general == GeneralSettings(iconShowsState: false, onboardingCompleted: true, autoUpdate: true))
+    }
+
+    @Test func `an older general save gets the defaults for what it lacks`() throws {
+        let name = "PreferencesStoreTests.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: name))
+        defer { defaults.removePersistentDomain(forName: name) }
+        defaults.set(Data(#"{"onboardingCompleted":true}"#.utf8), forKey: PreferencesStore.generalKey)
+
+        let store = PreferencesStore(defaults: defaults)
+        #expect(store.general == GeneralSettings(iconShowsState: true, onboardingCompleted: true, autoUpdate: true))
     }
 
     @Test func `an unchanged value is not written`() throws {

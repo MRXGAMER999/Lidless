@@ -6,12 +6,21 @@ struct PopoverFooter: View {
     let system: SystemStore
     let actions: PopoverActions
 
+    /// macOS 12 still calls the window Preferences (as the app menu does).
+    private static var settingsTitle: Text {
+        if #available(macOS 13, *) {
+            Text("Settings…", comment: "Popover footer button that opens the Settings window")
+        } else {
+            Text("Preferences…", comment: "Popover footer button that opens the Preferences window (macOS 12 name for Settings)")
+        }
+    }
+
     var body: some View {
         HStack(spacing: 8) {
             ThermalStatusChip(system: system)
             Spacer(minLength: 0)
             SplitCapsule(
-                leadingTitle: Text("Settings…", comment: "Popover footer button that opens the Settings window"),
+                leadingTitle: Self.settingsTitle,
                 leadingAction: { actions.openSettings(.deskMode) },
                 trailingTitle: Text("Quit", comment: "Popover footer button that quits Lidless"),
                 trailingAction: { actions.quit() }

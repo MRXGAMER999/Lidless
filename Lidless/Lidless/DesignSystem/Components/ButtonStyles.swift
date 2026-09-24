@@ -43,19 +43,22 @@ struct SecondaryButtonStyle: ButtonStyle {
     }
 
     var size: Size = .medium
+    /// Padding inside the 1 pt border; nil uses the size's own (20 / 16 / 14).
+    /// Onboarding's "Back" is 18.
+    var horizontalPadding: CGFloat? = nil
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(font)
             .foregroundStyle(Palette.textPrimary)
             .lineLimit(1)
-            .padding(.horizontal, horizontalPadding + Spacing.hairline)
+            .padding(.horizontal, (horizontalPadding ?? defaultHorizontalPadding) + Spacing.hairline)
             .frame(height: height)
             .background {
                 Capsule()
                     .fill(Palette.secondaryButtonFill)
-                    .overlay { Capsule().strokeBorder(Palette.secondaryButtonBorder, lineWidth: 1) }
-                    .lidlessShadow(.css(y: 1, blur: 3, color: Palette.secondaryButtonShadow))
+                    .overlay { Capsule().strokeBorder(border, lineWidth: 1) }
+                    .lidlessShadow(.css(y: 1, blur: 3, color: shadow))
             }
             .contentShape(Capsule())
             .opacity(configuration.isPressed ? 0.7 : 1)
@@ -77,7 +80,17 @@ struct SecondaryButtonStyle: ButtonStyle {
         }
     }
 
-    private var horizontalPadding: CGFloat {
+    /// Each board's own values: "Back to 100%" (Popover-Boost) 0.12 / 0.1,
+    /// "Check Now" (Settings2-General) 0.14 / 0.08, "Back" (Onboarding-Setup) 0.12 / 0.08.
+    private var border: Color {
+        size == .medium ? Palette.secondaryButtonBorderStrong : Palette.secondaryButtonBorder
+    }
+
+    private var shadow: Color {
+        size == .small ? Palette.secondaryButtonShadow : Palette.buttonShadow
+    }
+
+    private var defaultHorizontalPadding: CGFloat {
         switch size {
         case .large: 20
         case .medium: 16

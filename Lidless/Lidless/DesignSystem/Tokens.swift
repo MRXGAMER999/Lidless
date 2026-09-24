@@ -67,9 +67,16 @@ nonisolated enum Palette {
     static let boostMarker = adaptive("boostMarker", light: srgb(0x1B2531, 0.45), dark: srgb(0xFFFFFF, 0.5))
     static let thumbRing = fixed(0x1B2531, 0.15)
     static let fill7 = fixed(0x1B2531, 0.07)
-    static let dashedBorder = adaptive("dashedBorder", light: srgb(0x1B2531, 0.25), dark: srgb(0xFFFFFF, 0.25))
+    /// Empty-state and "Not set" dashed borders, inactive page dots. Stronger with Increase Contrast.
+    static let dashedBorder = adaptive(
+        "dashedBorder", light: srgb(0x1B2531, 0.25), dark: srgb(0xFFFFFF, 0.25),
+        highContrastLight: srgb(0x1B2531, 0.6), highContrastDark: srgb(0xFFFFFF, 0.6)
+    )
     static let cardUnselected = fixed(0x1B2531, 0.10)
-    static let divider = adaptive("divider", light: srgb(0x000000, 0.07), dark: srgb(0xFFFFFF, 0.1))
+    static let divider = adaptive(
+        "divider", light: srgb(0x000000, 0.07), dark: srgb(0xFFFFFF, 0.1),
+        highContrastLight: srgb(0x000000, 0.3), highContrastDark: srgb(0xFFFFFF, 0.35)
+    )
     static let toggleOffTrack = fixed(0x787880, 0.30)
 
     // MARK: Popover panel
@@ -120,9 +127,14 @@ nonisolated enum Palette {
     static let calloutFill = adaptive("calloutFill", light: srgb(0xFFF4D6), dark: srgb(0xFFBF00, 0.16))
     static let calloutText = adaptive("calloutText", light: srgb(0x5A3B00), dark: srgb(0xFFD466))
 
-    /// White capsule buttons ("Back to 100%", "Check Now"). Derived for dark.
+    /// White capsule buttons ("Back to 100%", "Check Now", "Back"). Derived for dark.
     static let secondaryButtonFill = adaptive("secondaryButtonFill", light: srgb(0xFFFFFF), dark: srgb(0xFFFFFF, 0.12))
+    /// rgba(27,37,49,0.12): "Back to 100%", onboarding "Back".
     static let secondaryButtonBorder = adaptive("secondaryButtonBorder", light: srgb(0x1B2531, 0.12), dark: srgb(0xFFFFFF, 0.16))
+    /// rgba(27,37,49,0.14): "Check Now" (Settings2-General).
+    static let secondaryButtonBorderStrong = adaptive("secondaryButtonBorderStrong", light: srgb(0x1B2531, 0.14), dark: srgb(0xFFFFFF, 0.16))
+    /// `0 1px 3px` rgba(0,0,0,0.1): "Back to 100%", the HUD's "Turn Back On".
+    /// "Check Now" and "Back" use `buttonShadow` (0.08).
     static let secondaryButtonShadow = adaptive("secondaryButtonShadow", light: srgb(0x000000, 0.1), dark: .clear)
 
     static let appIconShadow = adaptive("appIconShadow", light: srgb(0x785000, 0.25), dark: srgb(0x000000, 0.4))
@@ -148,9 +160,49 @@ nonisolated enum Palette {
     /// Not designed: proposed red.
     static let thermalCritical = adaptive("thermalCritical", light: srgb(0xD93025), dark: srgb(0xFF453A))
 
+    // MARK: Settings and onboarding
+    // Designed in light only; the dark values are derived in the popover's dark language.
+
+    /// Window wash, rgba(250,248,244,0.9) over the window's blur.
+    static let settingsWindowBg = adaptive("settingsWindowBg", light: srgb(0xFAF8F4, 0.9), dark: srgb(0x1E1E24, 0.9))
+    static let settingsCardFill = adaptive("settingsCardFill", light: srgb(0xFFFFFF, 0.84), dark: srgb(0xFFFFFF, 0.08))
+    static let settingsCardBorder = adaptive("settingsCardBorder", light: srgb(0xFFFFFF, 0.9), dark: srgb(0xFFFFFF, 0.1))
+    /// `0 0 0 1px` ring just outside the card's border.
+    static let settingsCardRing = adaptive(
+        "settingsCardRing", light: srgb(0x000000, 0.05), dark: srgb(0x000000, 0.3),
+        highContrastLight: srgb(0x000000, 0.35), highContrastDark: srgb(0xFFFFFF, 0.35)
+    )
+    static let settingsCardShadow = adaptive("settingsCardShadow", light: srgb(0x281E0A, 0.06), dark: srgb(0x000000, 0.25))
+    /// rgba(27,37,49,0.07): segmented nav track, neutral badges, icon-state chips.
+    static let neutralFill = adaptive("neutralFill", light: srgb(0x1B2531, 0.07), dark: srgb(0xFFFFFF, 0.08))
+    /// Segmented nav track's `inset 0 1px 2px`.
+    static let segmentedTrackInset = adaptive("segmentedTrackInset", light: srgb(0x000000, 0.06), dark: srgb(0x000000, 0.25))
+    /// Selected segment's `0 1px 3px`.
+    static let segmentedSelectedShadow = adaptive("segmentedSelectedShadow", light: srgb(0x785000, 0.3), dark: srgb(0x000000, 0.35))
+    /// TokenMenu pill; its fill and text are `calloutFill` / `calloutText`.
+    static let tokenBorder = adaptive(
+        "tokenBorder", light: srgb(0xF2C94C), dark: srgb(0xFFBF00, 0.45),
+        highContrastLight: srgb(0x8A5A00), highContrastDark: srgb(0xFFD466)
+    )
+    static let methodCardFill = adaptive("methodCardFill", light: srgb(0xFFFFFF, 0.6), dark: srgb(0xFFFFFF, 0.05))
+    static let methodCardSelectedFill = adaptive("methodCardSelectedFill", light: srgb(0xFFFBEF), dark: srgb(0xFFBF00, 0.1))
+    static let methodCardBorder = adaptive(
+        "methodCardBorder", light: srgb(0x1B2531, 0.1), dark: srgb(0xFFFFFF, 0.12),
+        highContrastLight: srgb(0x1B2531, 0.4), highContrastDark: srgb(0xFFFFFF, 0.45)
+    )
+    /// NumberBadge circle: ink in light, a light wash in dark (ink vanishes on a dark card).
+    static let numberBadgeFill = adaptive("numberBadgeFill", light: srgb(0x1B2531), dark: srgb(0xFFFFFF, 0.12))
+
+    // Ceiling slider, on the dark hero in both appearances.
+    static let ceilingTrackBg = fixed(0xFFFFFF, 0.07)
+    static let ceilingHatch = fixed(0xFFFFFF, 0.14)
+    static let ceilingMarker = fixed(0xFFFFFF, 0.5)
+
     // MARK: On dark heroes (both appearances)
 
     static let onDarkToggleOff = fixed(0xFFFFFF, 0.2)
+    /// Off track of the Settings heroes' switches (Settings2-DeskMode: rgba(255,255,255,0.18)).
+    static let onDarkToggleOffSettingsHero = fixed(0xFFFFFF, 0.18)
     static let onDarkToggleDisabledTrack = fixed(0xFFFFFF, 0.1)
     static let onDarkToggleDisabledKnob = fixed(0xFFFFFF, 0.35)
     static let onDarkGhostFill = fixed(0xFFFFFF, 0.1)
@@ -173,11 +225,36 @@ nonisolated enum Palette {
         )
     }
 
+    /// Every appearance an adaptive token tells apart. The high-contrast names
+    /// only work for matching: macOS picks them when Increase Contrast is on.
+    private static let appearanceNames: [NSAppearance.Name] = [
+        .aqua, .darkAqua, .accessibilityHighContrastAqua, .accessibilityHighContrastDarkAqua,
+    ]
+
     // Built in a nonisolated context on purpose: AppKit may call the provider
     // off the main thread while drawing, and a main-actor closure would trap.
-    private static func adaptive(_ name: String, light: NSColor, dark: NSColor) -> Color {
+    /// - Parameters:
+    ///   - highContrastLight, highContrastDark: Used with Increase Contrast
+    ///     (design-spec §13); nil keeps the normal value.
+    private static func adaptive(
+        _ name: String,
+        light: NSColor,
+        dark: NSColor,
+        highContrastLight: NSColor? = nil,
+        highContrastDark: NSColor? = nil
+    ) -> Color {
         let color = NSColor(name: NSColor.Name("Lidless." + name)) { appearance in
-            appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua ? dark : light
+            let match = appearance.bestMatch(from: appearanceNames)
+            let isDark = match == .darkAqua || match == .accessibilityHighContrastDarkAqua
+            // The Settings and onboarding windows force plain `.aqua`, so the
+            // system setting is checked as well as the appearance.
+            let isHighContrast = match == .accessibilityHighContrastAqua
+                || match == .accessibilityHighContrastDarkAqua
+                || NSWorkspace.shared.accessibilityDisplayShouldIncreaseContrast
+            if isHighContrast {
+                return isDark ? highContrastDark ?? dark : highContrastLight ?? light
+            }
+            return isDark ? dark : light
         }
         return Color(nsColor: color)
     }

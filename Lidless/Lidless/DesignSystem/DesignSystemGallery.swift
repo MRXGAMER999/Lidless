@@ -10,6 +10,10 @@ struct DesignSystemGallery: View {
     @State private var boosted = 130.0
     @State private var level = 0.8
     @State private var fullLevel = 1.0
+    @State private var tab = GalleryTab.desk
+    @State private var heat = "Serious"
+    @State private var disconnect = true
+    @State private var ceiling = 1000.0
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
@@ -39,7 +43,7 @@ struct DesignSystemGallery: View {
                     Toggle(isOn: .constant(false)) { Text(verbatim: "Disabled") }
                         .toggleStyle(PillToggleStyle(surface: .onDark))
                         .disabled(true)
-                    Toggle(isOn: $toggleOff) { Text(verbatim: "XL off") }.toggleStyle(PillToggleStyle(size: .extraLarge, surface: .onDark))
+                    Toggle(isOn: $toggleOff) { Text(verbatim: "XL off") }.toggleStyle(PillToggleStyle(size: .extraLarge, surface: .onDarkSettingsHero))
                 }
                 .padding(12)
                 .background { HeroCardSurface(elevation: .flat) }
@@ -98,6 +102,54 @@ struct DesignSystemGallery: View {
                 .background { HeroCardSurface(elevation: .flat) }
             }
 
+            GallerySection(title: "Settings") {
+                SegmentedNav(selection: $tab, tabs: GalleryTab.allCases, title: { Text(verbatim: $0.rawValue) }, glyph: \.glyph)
+                SettingsCard(title: Text(verbatim: "Guard rails")) {
+                    HStack(spacing: 12) {
+                        IconTile(glyph: .thermometer, style: .cream)
+                        IconTile(glyph: .laptopSlash, style: .dark)
+                        IconTile(glyph: .sun, style: .gold)
+                        Spacer()
+                        TokenMenu(
+                            selection: $heat,
+                            options: ["Fair", "Serious", "Critical"],
+                            label: { Text(verbatim: $0) },
+                            size: .compact,
+                            accessibilityLabel: Text(verbatim: "Heat level")
+                        )
+                    }
+                    HStack(spacing: 10) {
+                        Badge(text: Text(verbatim: "Always"), style: .locked)
+                        Badge(text: Text(verbatim: "Boost ready"), style: .gold)
+                        Badge(text: Text(verbatim: "Normal only"), style: .neutral)
+                        NumberBadge(number: 2)
+                        F2KeyIcon()
+                        IconStateChips()
+                        PageDots(count: 2, current: 1)
+                    }
+                    NoteCallout { Text(verbatim: "Auto-brightness can block Boost on some Macs.") }
+                }
+                HStack(spacing: 10) {
+                    MethodCard(title: Text(verbatim: "Disconnect"), detail: Text(verbatim: "Windows move to your other screen."), isSelected: disconnect, action: { disconnect = true }) {
+                        MethodDisconnectArt()
+                    }
+                    MethodCard(title: Text(verbatim: "Black out"), detail: Text(verbatim: "Screen goes dark, windows stay put."), isSelected: !disconnect, action: { disconnect = false }) {
+                        MethodBlackOutArt()
+                    }
+                }
+                .fixedSize(horizontal: false, vertical: true)
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(spacing: 6) {
+                        InfoChip(text: Text(verbatim: "Lid open"))
+                        InfoChip(text: Text(verbatim: "Built-in screen on"), isEmphasized: true)
+                        InfoChip(text: Text(verbatim: "Built-in screen off"), isActive: true)
+                    }
+                    CeilingSlider(ceilingNits: $ceiling, normalMaxNits: 600)
+                }
+                .padding(16)
+                .background { HeroCardSurface(cornerRadius: Radius.heroSettings, elevation: .flat) }
+            }
+
             GallerySection(title: "Notes") {
                 Callout(glyph: .flame, message: Text(verbatim: "Boost on · ≈ 800 nits. Uses more battery and heat."))
                 EmptyDisplaysCard()
@@ -107,6 +159,20 @@ struct DesignSystemGallery: View {
         .padding(20)
         .frame(width: 560)
         .background { Color(nsColor: .windowBackgroundColor) }
+    }
+}
+
+private enum GalleryTab: String, CaseIterable, Identifiable {
+    case desk = "Desk Mode", brightness = "Brightness", keys = "Keys & App"
+
+    var id: Self { self }
+
+    var glyph: LidlessGlyph {
+        switch self {
+        case .desk: .laptopSlash
+        case .brightness: .sun
+        case .keys: .keyboard
+        }
     }
 }
 

@@ -10,6 +10,10 @@ import LidlessCore
 /// `setOn(_:)` just changes the published state.
 final class DeskModeStore: ObservableObject {
     @Published private(set) var state: DeskModeState
+    /// True while the keep-or-revert prompt asks whether to keep the built-in
+    /// screen off (`state` is `.on` then too). Set before `state` changes, so
+    /// whoever reacts to `.on` reads it right. Always false without a controller.
+    @Published private(set) var isConfirming = false
     /// Why Desk Mode can't be used right now; nil when it can. Kept apart from
     /// `state` so turning Desk Mode off lands on the current reason.
     private(set) var unavailableReason: DeskModeState.UnavailableReason?
@@ -62,6 +66,12 @@ final class DeskModeStore: ObservableObject {
     func update(_ newState: DeskModeState) {
         guard newState != state else { return }
         state = newState
+    }
+
+    /// `DeskModeController` only: whether the prompt is up.
+    func setConfirming(_ confirming: Bool) {
+        guard confirming != isConfirming else { return }
+        isConfirming = confirming
     }
 
     /// Used by the system layer whenever lid, displays or support change.

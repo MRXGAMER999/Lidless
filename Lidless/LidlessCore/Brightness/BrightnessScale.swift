@@ -154,10 +154,23 @@ extension BrightnessScale {
     /// - Parameters:
     ///   - panel: Constants read from the device tree.
     ///   - canBoost: The panel is XDR and no reference preset locks it.
-    ///   - ceilingSetting: Settings › Brightness ceiling in nits; nil for the panel's own limit.
+    ///   - ceilingSetting: The stored Settings › Brightness ceiling in nits
+    ///     (`BoostSettings.ceilingNits`); nil for the panel's own limit. It goes
+    ///     through `BoostSettings.effectiveCeiling(_:normalMaxNits:)`, like the
+    ///     Settings slider, so a ceiling at or below this panel's normal maximum
+    ///     is raised to the first step above it, and a panel with no room above
+    ///     its normal maximum gets no Boost range.
     public init(panel: PanelBrightnessInfo, canBoost: Bool, ceilingSetting: Double? = nil) {
-        let normal = panel.userMaxNits ?? Self.fallbackNormalMaxNits
-        let ceiling = min(ceilingSetting ?? .infinity, panel.outdoorMaxNits ?? Self.fallbackCeilingNits)
+        let read = panel.userMaxNits ?? Self.fallbackNormalMaxNits
+        // The same normal maximum the designated initializer keeps.
+        let normal = read.isFinite ? max(1, read) : 1
+        let panelLimit = panel.outdoorMaxNits ?? Self.fallbackCeilingNits
+        let ceiling: Double
+        if let ceilingSetting {
+            ceiling = BoostSettings.effectiveCeiling(ceilingSetting, normalMaxNits: normal).map { min($0, panelLimit) } ?? normal
+        } else {
+            ceiling = panelLimit
+        }
         self.init(normalMaxNits: normal, ceilingNits: canBoost ? ceiling : normal, curve: panel.curve)
     }
 }

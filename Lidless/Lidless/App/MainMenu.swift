@@ -3,10 +3,16 @@ import AppKit
 /// The main menu, built in code. A menu bar app only shows it while one of its
 /// windows is active, but it is what makes ⌘C, ⌘V, ⌘W and friends work there.
 enum MainMenu {
-    static func make(settingsTarget: AnyObject, settingsAction: Selector) -> NSMenu {
+    /// - Parameters:
+    ///   - target: Receives `settingsAction` and, in debug builds, `showOnboardingAction`.
+    ///   - showOnboardingAction: Debug › Show Onboarding (debug builds only).
+    static func make(target: AnyObject, settingsAction: Selector, showOnboardingAction: Selector) -> NSMenu {
         let main = NSMenu()
-        main.addItem(submenuItem(appMenu(settingsTarget: settingsTarget, settingsAction: settingsAction)))
+        main.addItem(submenuItem(appMenu(settingsTarget: target, settingsAction: settingsAction)))
         main.addItem(submenuItem(editMenu()))
+        #if DEBUG
+        main.addItem(submenuItem(debugMenu(target: target, showOnboardingAction: showOnboardingAction)))
+        #endif
         let window = windowMenu()
         main.addItem(submenuItem(window))
         NSApp.windowsMenu = window
@@ -21,8 +27,15 @@ enum MainMenu {
             keyEquivalent: ""
         )
         menu.addItem(.separator())
+        let settingsTitle: String
+        if #available(macOS 13, *) {
+            settingsTitle = String(localized: "Settings…", comment: "App menu item that opens the Settings window")
+        } else {
+            // macOS 12 still calls them Preferences.
+            settingsTitle = String(localized: "Preferences…", comment: "App menu item that opens the Settings window, on macOS 12 (which calls settings Preferences)")
+        }
         let settings = menu.addItem(
-            withTitle: String(localized: "Settings…", comment: "App menu item that opens the Settings window"),
+            withTitle: settingsTitle,
             action: settingsAction,
             keyEquivalent: ","
         )
@@ -55,6 +68,16 @@ enum MainMenu {
         menu.addItem(withTitle: String(localized: "Select All", comment: "Edit menu item"), action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
         return menu
     }
+
+    #if DEBUG
+    /// Developer-only, so its titles aren't localised.
+    private static func debugMenu(target: AnyObject, showOnboardingAction: Selector) -> NSMenu {
+        let menu = NSMenu(title: "Debug")
+        let onboarding = menu.addItem(withTitle: "Show Onboarding", action: showOnboardingAction, keyEquivalent: "")
+        onboarding.target = target
+        return menu
+    }
+    #endif
 
     private static func windowMenu() -> NSMenu {
         let menu = NSMenu(title: String(localized: "Window", comment: "Main menu title"))

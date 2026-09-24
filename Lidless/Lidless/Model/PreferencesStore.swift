@@ -3,18 +3,19 @@ import Foundation
 import LidlessCore
 import os
 
-/// The user's saved choices: Desk Mode's and Boost's settings and the global
-/// shortcuts. Each is one JSON value in UserDefaults, so a new field decodes
-/// from older saves with its default (see `DeskModeSettings`, `BoostSettings`
-/// and `ShortcutSet`).
+/// The user's saved choices: Desk Mode's and Boost's settings, the global
+/// shortcuts and the app-wide settings. Each is one JSON value in UserDefaults,
+/// so a new field decodes from older saves with its default (see
+/// `DeskModeSettings`, `BoostSettings`, `ShortcutSet` and `GeneralSettings`).
 ///
-/// The app only reads and writes them; the Settings window (Phase 5) edits them.
+/// The Settings window and onboarding edit them; the controllers follow them.
 /// A value that can't be decoded falls back to the defaults and is left on disk
 /// until the next change overwrites it.
 final class PreferencesStore: ObservableObject {
     static let deskModeKey = "deskMode.settings"
     static let shortcutsKey = "shortcuts"
     static let boostKey = "boost.settings"
+    static let generalKey = "general.settings"
 
     @Published var deskMode: DeskModeSettings {
         didSet { if deskMode != oldValue { save(deskMode, forKey: Self.deskModeKey) } }
@@ -29,6 +30,11 @@ final class PreferencesStore: ObservableObject {
         didSet { if boost != oldValue { save(boost, forKey: Self.boostKey) } }
     }
 
+    /// Settings › Keys & App (menu bar icon, auto-update) and first-run state.
+    @Published var general: GeneralSettings {
+        didSet { if general != oldValue { save(general, forKey: Self.generalKey) } }
+    }
+
     private let defaults: UserDefaults
     private let log = Logger(subsystem: "io.github.mrxgamer999.Lidless", category: "Preferences")
 
@@ -38,6 +44,7 @@ final class PreferencesStore: ObservableObject {
         deskMode = Self.load(DeskModeSettings.self, forKey: Self.deskModeKey, from: defaults) ?? .defaults
         shortcuts = Self.load(ShortcutSet.self, forKey: Self.shortcutsKey, from: defaults) ?? .defaults
         boost = Self.load(BoostSettings.self, forKey: Self.boostKey, from: defaults) ?? .defaults
+        general = Self.load(GeneralSettings.self, forKey: Self.generalKey, from: defaults) ?? .defaults
     }
 
     private static func load<Value: Decodable>(_ type: Value.Type, forKey key: String, from defaults: UserDefaults) -> Value? {

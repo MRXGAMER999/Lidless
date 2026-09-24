@@ -33,6 +33,44 @@ struct BoostSettingsTests {
         #expect(settings.clampedCeiling == expected)
     }
 
+    @Test(arguments: [
+        (500.0, 550...1000),
+        (600, 650...1000), (601, 700...1000), (650, 700...1000),
+        (950, 1000...1000), (960, nil), (1000, nil), (1600, nil),
+        // Unknown normal maximum: the whole range.
+        (0, 550...1000), (-1, 550...1000), (.nan, 550...1000), (.infinity, 550...1000),
+    ] as [(Double, ClosedRange<Double>?)])
+    func `the ceiling range starts one step above the panel's normal max`(normal: Double, expected: ClosedRange<Double>?) {
+        #expect(BoostSettings.ceilingRange(normalMaxNits: normal) == expected)
+    }
+
+    @Test(arguments: [
+        // normal max, stored 550, stored 600, stored 1000
+        (500.0, 550, 600, 1000),
+        (600, 650, 650, 1000),
+        (950, 1000, 1000, 1000),
+        (1000, nil, nil, nil),
+        (.nan, 550, 600, 1000),
+        (0, 550, 600, 1000),
+    ] as [(Double, Double?, Double?, Double?)])
+    func `the effective ceiling fits the panel`(normal: Double, at550: Double?, at600: Double?, at1000: Double?) {
+        for (stored, expected) in [(550.0, at550), (600, at600), (1000, at1000)] {
+            var settings = BoostSettings.defaults
+            settings.ceilingNits = stored
+            #expect(settings.effectiveCeiling(normalMaxNits: normal) == expected)
+            #expect(BoostSettings.effectiveCeiling(stored, normalMaxNits: normal) == expected)
+            // The stored value is never rewritten.
+            #expect(settings.ceilingNits == stored)
+        }
+    }
+
+    @Test(arguments: [
+        (620.0, 650.0), (675, 700), (800, 800), (1200, 1000), (.nan, 1000), (.infinity, 1000), (-.infinity, 650),
+    ])
+    func `the effective ceiling snaps odd stored values`(stored: Double, expected: Double) {
+        #expect(BoostSettings.effectiveCeiling(stored, normalMaxNits: 600) == expected)
+    }
+
     @Test func `settings survive a round trip`() throws {
         let settings = BoostSettings(allowed: false, ceilingNits: 750, pauseAtHeat: .critical, pauseBelowBattery: 10, wakeAtNormal: false, keysIntoBoost: false)
         let data = try JSONEncoder().encode(settings)

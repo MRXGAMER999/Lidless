@@ -69,6 +69,14 @@ final class DeskModeController {
     private var exitRestoreFailed = false
     private(set) var hasTerminated = false
     private var hangArmed = false
+    /// `requestTurnOn(forcePrompt: true)` ("Test the safety net", an intent
+    /// before onboarding): the engage in flight asks before keeping the panel
+    /// off whatever the setting says. Cleared once it leaves `.engaging`.
+    private var forcesPrompt = false
+    /// "Try It" and onboarding's "Try it now", told about the next panic key press.
+    let panicKeyWaiters = PanicKeyWaiters()
+    /// The panic key Carbon holds now, put back when a new one can't be registered.
+    private var registeredPanic: KeyShortcut?
     /// The panel the current session turns off, for the crash marker.
     private var target: (displayID: UInt32, uuid: String?, method: DeskModeMethod)?
     /// The panel the exit path couldn't confirm back, for a power off that
@@ -123,7 +131,7 @@ final class DeskModeController {
         #if DEBUG
         if configuration.maxDuration == nil { configuration.maxDuration = 300 }
         #endif
-        Self.apply(model.preferences.deskMode, to: &configuration)
+        Self.apply(model.preferences.deskMode, forcingPrompt: false, to: &configuration)
         machine = DeskModeMachine(configuration: configuration, availability: model.deskMode.unavailableReason)
     }
 
@@ -234,12 +242,56 @@ final class DeskModeController {
         setOn(!machine.state.isOn)
     }
 
-    /// The panic key: always sends an enable, whatever the machine thinks.
+    /// Turns Desk Mode on like the popover switch. With `forcePrompt`, the
+    /// keep-or-revert prompt shows even with "Ask before keeping it off"
+    /// switched off, so the user sees the screen come back and can answer
+    /// ("Test the safety net"; an intent before onboarding finished). Every
+    /// guard of a normal turn-on applies; the force lasts for this engage only
+    /// and is dropped when the turn-on is refused.
+    func requestTurnOn(forcePrompt: Bool) {
+        // Not idle: the machine refuses it as busy, and an engage already in
+        // flight keeps the prompt setting it started with.
+        if forcePrompt, machine.phase == .idle {
+            forcesPrompt = true
+            Self.apply(model.preferences.deskMode, forcingPrompt: true, to: &machine.configuration)
+        }
+        send(.turnOn(trigger: .manual))
+    }
+
+    /// Settings › "Test the safety net": Desk Mode on with the prompt forced.
+    func testSafetyNet() {
+        log.notice("Testing the safety net")
+        requestTurnOn(forcePrompt: true)
+    }
+
+    /// The panic key's action (also the intent's): always sends an enable,
+    /// whatever the machine thinks, and ends Boost and the external shades.
     func panic() {
         log.notice("Panic key")
         boost?.panic()
         declineRule()
         send(.panic)
+    }
+
+    /// A press of the panic key itself (Carbon, or the menu-tracking monitor):
+    /// the full `panic()`, then whoever waits for the key hears about it. The
+    /// waiters only watch: nothing skips the panic.
+    func panicKeyPressed() {
+        panic()
+        panicKeyWaiters.fire()
+    }
+
+    /// "Try It" / onboarding: `pressed` runs once, at the next press of the
+    /// panic key, after that press's `panic()`. Survives shortcut changes.
+    func awaitPanicKey(_ pressed: @escaping @MainActor () -> Void) {
+        panicKeyWaiters.add(pressed)
+    }
+
+    /// Stops every wait. Limitation: waits aren't told apart, so when two
+    /// screens wait at once (Settings' Try It and onboarding), either one
+    /// cancelling cancels both; a screen that still wants the key asks again.
+    func cancelAwaitPanicKey() {
+        panicKeyWaiters.cancelAll()
     }
 
     /// Launch recovery (or a power off that wasn't) couldn't confirm the panel
@@ -264,6 +316,8 @@ final class DeskModeController {
         stopTicking()
         cancelDeadlineTick()
         hotKeys?.unregisterAll()
+        registeredPanic = nil
+        panicKeyWaiters.cancelAll()
         subscriptions.removeAll()
         // The switch handler stays: flips after this are ignored rather than
         // changing the store as a sample launch would.
@@ -398,6 +452,7 @@ final class DeskModeController {
             for command in commands { run(command) }
         }
         isProcessing = false
+        endForcedPromptIfDone()
         publish()
         let armHang = machine.phase != .idle
         if armHang != hangArmed {
@@ -405,6 +460,15 @@ final class DeskModeController {
             services.hang.setArmed(armHang)
         }
         updateTicking()
+    }
+
+    /// The machine reads `askBeforeKeeping` when the disable lands, so the
+    /// forced prompt lasts until the engage is over (prompt shown, refused or failed).
+    private func endForcedPromptIfDone() {
+        guard forcesPrompt else { return }
+        if case .engaging = machine.phase { return }
+        forcesPrompt = false
+        Self.apply(model.preferences.deskMode, forcingPrompt: false, to: &machine.configuration)
     }
 
     private func run(_ command: DeskModeCommand) {
@@ -535,6 +599,9 @@ final class DeskModeController {
     }
 
     private func publish() {
+        // Before the state: whoever reacts to `.on` reads whether it asks.
+        let confirming = if case .confirming = machine.phase { true } else { false }
+        model.deskMode.setConfirming(confirming)
         model.deskMode.update(machine.state)
     }
 
@@ -544,12 +611,12 @@ final class DeskModeController {
     /// both switches (`CompositeBuiltInSwitch`), so a change mid-session can't
     /// strand the panel.
     private func settingsDidChange(_ settings: DeskModeSettings) {
-        Self.apply(settings, to: &machine.configuration)
+        Self.apply(settings, forcingPrompt: forcesPrompt, to: &machine.configuration)
     }
 
-    private static func apply(_ settings: DeskModeSettings, to configuration: inout DeskModeMachine.Configuration) {
+    private static func apply(_ settings: DeskModeSettings, forcingPrompt: Bool, to configuration: inout DeskModeMachine.Configuration) {
         configuration.method = settings.method
-        configuration.askBeforeKeeping = settings.askBeforeKeeping
+        configuration.askBeforeKeeping = settings.askBeforeKeeping || forcingPrompt
         configuration.keepAfterWake = settings.keepAfterWake
     }
 
@@ -562,12 +629,7 @@ final class DeskModeController {
 
     private func registerHotKeys(_ shortcuts: ShortcutSet) {
         guard let hotKeys, !hasTerminated else { return }
-        let panic = hotKeys.register(shortcuts.panic, for: .panic, handler: { [weak self] in self?.panic() })
-        if case .failed(let status) = panic {
-            log.error("Couldn't register the panic key: \(status, privacy: .public)")
-        } else if panic == .shared {
-            log.notice("Another app also holds the panic key; it may receive the presses")
-        }
+        registerPanicKey(shortcuts.panic, in: hotKeys)
         if let key = shortcuts.toggleDeskMode {
             // Held back while the shortcut recorder listens: registered on resume, nothing to report.
             let toggle = hotKeys.register(key, for: .toggleDeskMode, handler: { [weak self] in self?.toggle() })
@@ -577,6 +639,49 @@ final class DeskModeController {
         } else {
             hotKeys.unregister(.toggleDeskMode)
         }
+    }
+
+    /// The panic key must always be held. A new combination Carbon refuses
+    /// puts the one that worked back, and the saved shortcut follows.
+    private func registerPanicKey(_ shortcut: KeyShortcut, in hotKeys: HotKeyCenter) {
+        let handler: @MainActor () -> Void = { [weak self] in self?.panicKeyPressed() }
+        switch hotKeys.register(shortcut, for: .panic, handler: handler) {
+        case .exclusive, .deferred:
+            registeredPanic = shortcut
+        case .shared:
+            // Once per combination: other shortcut changes re-register it too.
+            guard registeredPanic != shortcut else { return }
+            registeredPanic = shortcut
+            log.error("Another app holds the panic key \(Self.describe(shortcut), privacy: .public) too and may receive the presses instead; choose another one in Settings › Keys & App")
+        case .failed(let status):
+            guard let previous = registeredPanic, previous != shortcut else {
+                log.fault("Couldn't register the panic key \(Self.describe(shortcut), privacy: .public): \(status, privacy: .public); it won't work until it can be")
+                return
+            }
+            log.error("Couldn't register the new panic key \(Self.describe(shortcut), privacy: .public): \(status, privacy: .public); keeping \(Self.describe(previous), privacy: .public)")
+            let restored = hotKeys.register(previous, for: .panic, handler: handler)
+            if !restored.isRegistered {
+                registeredPanic = nil
+                log.fault("Couldn't register the previous panic key again either: \(String(describing: restored), privacy: .public)")
+            }
+            // Not from inside this `$shortcuts` sink: the assignment in progress
+            // would store the refused key over the revert.
+            DispatchQueue.main.async { [weak self] in self?.revertPanicShortcut(from: shortcut, to: previous) }
+        }
+    }
+
+    /// Puts the saved panic key back to the one Carbon holds, unless the user
+    /// changed it again meanwhile. The change lands through `shortcutsDidChange`.
+    private func revertPanicShortcut(from refused: KeyShortcut, to previous: KeyShortcut) {
+        let preferences = model.preferences
+        guard !hasTerminated, preferences.shortcuts.panic == refused else { return }
+        var shortcuts = preferences.shortcuts
+        shortcuts.panic = previous
+        // The recorder never saves a combination twice, so this only guards a
+        // slot that picked up the old panic key in the same change.
+        if shortcuts.toggleDeskMode == previous { shortcuts.toggleDeskMode = nil }
+        if shortcuts.toggleBoost == previous { shortcuts.toggleBoost = nil }
+        preferences.shortcuts = shortcuts
     }
 
     // MARK: Logging
@@ -608,6 +713,11 @@ final class DeskModeController {
         }
     }
 
+    /// "⌃⌥⌘B".
+    private static func describe(_ shortcut: KeyShortcut) -> String {
+        shortcut.keycaps.joined()
+    }
+
     private static func describe(_ refusal: DeskModeRefusal) -> String {
         switch refusal {
         case .unavailable(let reason): "unavailable(\(reason))"
@@ -615,5 +725,34 @@ final class DeskModeController {
         case .latched: "latched"
         case .busy: "busy"
         }
+    }
+}
+
+/// Who waits for the next press of the panic key ("Try It", onboarding's
+/// "Try it now"). They only watch: the press has already run the full panic.
+///
+/// Waits aren't told apart (the `SettingsActions` contract has no tokens), so
+/// `cancelAll` ends every one of them.
+final class PanicKeyWaiters {
+    private var waiters: [@MainActor () -> Void] = []
+
+    var isWaiting: Bool { !waiters.isEmpty }
+    var count: Int { waiters.count }
+
+    /// `pressed` runs once, at the next `fire()`.
+    func add(_ pressed: @escaping @MainActor () -> Void) {
+        waiters.append(pressed)
+    }
+
+    func cancelAll() {
+        waiters.removeAll()
+    }
+
+    /// Runs every waiter once, in the order they came. A waiter that waits
+    /// again from inside its callback waits for the press after this one.
+    func fire() {
+        let pressed = waiters
+        waiters.removeAll()
+        for waiter in pressed { waiter() }
     }
 }

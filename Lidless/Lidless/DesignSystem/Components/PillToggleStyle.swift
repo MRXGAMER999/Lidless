@@ -18,8 +18,11 @@ struct PillToggleStyle: ToggleStyle {
 
     enum Surface {
         case light
-        /// On a dark hero card, in both appearances.
+        /// On a dark hero card, in both appearances (the popover's desk card: off track 0.2 white).
         case onDark
+        /// On a Settings hero (Settings2-DeskMode, -Brightness): as `onDark`
+        /// but with the board's 0.18 white off track.
+        case onDarkSettingsHero
     }
 
     var size: Size = .medium
@@ -70,7 +73,8 @@ private struct PillToggleSwitch: View {
         case (true, _, true): Palette.gold
         case (true, _, false): Palette.gold.opacity(0.5)
         case (false, .onDark, true): Palette.onDarkToggleOff
-        case (false, .onDark, false): Palette.onDarkToggleDisabledTrack
+        case (false, .onDarkSettingsHero, true): Palette.onDarkToggleOffSettingsHero
+        case (false, .onDark, false), (false, .onDarkSettingsHero, false): Palette.onDarkToggleDisabledTrack
         case (false, .light, true): Palette.toggleOffTrack
         // Not designed: a faded off track.
         case (false, .light, false): Palette.toggleOffTrack.opacity(0.5)
@@ -81,7 +85,7 @@ private struct PillToggleSwitch: View {
         switch (isOn, surface, isEnabled) {
         case (true, _, true): Palette.ink
         case (true, _, false): Palette.ink.opacity(0.6)
-        case (false, .onDark, false): Palette.onDarkToggleDisabledKnob
+        case (false, .onDark, false), (false, .onDarkSettingsHero, false): Palette.onDarkToggleDisabledKnob
         case (false, .light, false): Palette.white.opacity(0.7)
         case (false, _, true): Palette.white
         }

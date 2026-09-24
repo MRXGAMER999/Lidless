@@ -219,7 +219,7 @@ final class SystemController {
     /// pins brightness, so no Boost range) and Settings › Brightness.
     private func applyBrightnessScale(_ settings: BoostSettings) {
         let canBoost = inventory.builtIn?.supportsBoost == true && !inventory.builtInPresetLocksBrightness
-        model.brightness.applyScale(BrightnessScale(panel: panel, canBoost: canBoost, ceilingSetting: settings.clampedCeiling))
+        model.brightness.applyScale(BrightnessScale(panel: panel, canBoost: canBoost, ceilingSetting: settings.ceilingNits))
         if model.brightness.boostAllowed != settings.allowed {
             model.brightness.boostAllowed = settings.allowed
         }

@@ -38,6 +38,35 @@ public struct BoostSettings: Sendable, Equatable, Codable {
         return min(max(snapped, Self.ceilingRange.lowerBound), Self.ceilingRange.upperBound)
     }
 
+    /// Where the ceiling can go on a panel whose normal (SDR) maximum is
+    /// `normalMaxNits`: from one step above the normal maximum, rounded up to the
+    /// step (550 for a 500 nit panel, 650 for 600), to the full-screen limit of
+    /// 1,000. Nil when the panel leaves no room to boost. An unknown normal
+    /// maximum (0, negative, NaN, infinity) gives the full 550...1000.
+    public static func ceilingRange(normalMaxNits: Double) -> ClosedRange<Double>? {
+        let normal = normalMaxNits.isFinite ? max(normalMaxNits, 0) : 0
+        let lower = max(ceilingRange.lowerBound, (normal / ceilingStep).rounded(.up) * ceilingStep + ceilingStep)
+        return lower <= ceilingRange.upperBound ? lower...ceilingRange.upperBound : nil
+    }
+
+    /// The ceiling Boost really uses on this panel: the stored ceiling snapped to
+    /// the step and clamped into `ceilingRange(normalMaxNits:)`, or nil when the
+    /// panel leaves no room to boost. The popover, the keys, the intents and
+    /// Settings all go through this, so they agree; the stored value is left
+    /// alone, so a later panel with a lower normal maximum gets it back.
+    public func effectiveCeiling(normalMaxNits: Double) -> Double? {
+        Self.effectiveCeiling(ceilingNits, normalMaxNits: normalMaxNits)
+    }
+
+    /// `effectiveCeiling(normalMaxNits:)` for a stored ceiling on its own.
+    public static func effectiveCeiling(_ ceilingNits: Double, normalMaxNits: Double) -> Double? {
+        guard let range = ceilingRange(normalMaxNits: normalMaxNits) else { return nil }
+        var settings = defaults
+        settings.ceilingNits = ceilingNits
+        // clampedCeiling is on the step and the range's lower bound is too.
+        return min(max(settings.clampedCeiling, range.lowerBound), range.upperBound)
+    }
+
     private enum CodingKeys: String, CodingKey {
         case allowed, ceilingNits, pauseAtHeat, pauseBelowBattery, wakeAtNormal, keysIntoBoost
     }

@@ -1,4 +1,5 @@
 import AppKit
+import Combine
 import LidlessCore
 import os
 
@@ -13,9 +14,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private(set) var deskModeController: DeskModeController?
     /// Brightness Boost and external brightness; only a normal launch has one.
     private(set) var boostController: BoostController?
+    /// Settings and onboarding; only a launch with UI has one.
+    private(set) var windows: WindowCoordinator?
     private var hotKeys: HotKeyCenter?
+    private var brightnessKeys: BrightnessKeyTap?
     private var signalRestorer: SignalRestorer?
     private var notifier: UserNotifier?
+    /// First run, but the system launched Lidless for something else (a
+    /// Shortcut, restored state): onboarding waits until the user comes to it.
+    private var onboardingDeferred = false
 
     private let log = Logger(subsystem: "io.github.mrxgamer999.Lidless", category: "App")
 
@@ -29,7 +36,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationWillFinishLaunching(_ notification: Notification) {
-        NSApp.mainMenu = MainMenu.make(settingsTarget: self, settingsAction: #selector(openSettingsFromMenu(_:)))
+        NSApp.mainMenu = MainMenu.make(
+            target: self,
+            settingsAction: #selector(openSettingsFromMenu(_:)),
+            showOnboardingAction: #selector(showOnboardingFromMenu(_:))
+        )
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -49,18 +60,50 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             // Before the status item exists, so its first frame is already live.
             recoveredAfterCrash = startLive()
         }
+        // Shortcuts and Siri reach the app through this (sample launches have
+        // no controllers; the bridge then changes the stores directly).
+        AppIntentBridge.shared = AppIntentBridge(model: model, deskMode: deskModeController, boost: boostController)
         let actions = PopoverActions(
             openSettings: { [weak self] tab in self?.openSettings(tab) },
             quit: { [weak self] in self?.quit() }
         )
-        let statusItemController = StatusItemController(model: model, actions: actions)
+        let statusItemController = StatusItemController(
+            model: model,
+            actions: actions,
+            iconShowsState: model.preferences.$general.map(\.iconShowsState).removeDuplicates().eraseToAnyPublisher()
+        )
         statusItemController.onVisibilityChange = { [weak self] shown in
-            shown ? self?.systemController?.popoverWillShow() : self?.systemController?.popoverDidClose()
+            guard let self else { return }
+            if shown {
+                systemController?.popoverWillShow()
+                if onboardingDeferred {
+                    // After the panel finished opening, so closing it isn't re-entrant.
+                    DispatchQueue.main.async { [weak self] in self?.showDeferredOnboarding() }
+                }
+            } else {
+                systemController?.popoverDidClose()
+            }
         }
         self.statusItemController = statusItemController
+        let windows = WindowCoordinator(
+            model: model,
+            actions: makeSettingsActions(),
+            launchAtLogin: LaunchAtLoginService(),
+            openPopover: { [weak self] in self?.statusItemController?.open() }
+        )
+        self.windows = windows
         if environment.showsPopoverAtLaunch {
             // Give the menu bar a moment to place the new item, so the panel opens under it.
             perform(#selector(openPopoverAfterLaunch), with: nil, afterDelay: 0.5)
+        } else if !model.preferences.general.onboardingCompleted {
+            // First run. Not in screenshot launches, which open the popover instead.
+            if Self.isDefaultLaunch(notification) {
+                windows.showOnboarding()
+            } else {
+                // No window, no Dock tile, no activation for a Shortcut run.
+                log.info("First run, but not a normal launch: onboarding waits for the user")
+                onboardingDeferred = true
+            }
         }
         if recoveredAfterCrash { notifier?.recoveredAfterCrash() }
     }
@@ -90,13 +133,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             )
         )
         blackout.onCoverLost = { [weak deskMode] in deskMode?.coverLost() }
+        let brightnessKeys = BrightnessKeyTap()
+        self.brightnessKeys = brightnessKeys
         let boost = BoostController(
             model: model,
             services: BoostController.Services(
                 overlay: EDRBoostOverlay(),
                 writer: DisplayServicesBrightnessWriter(),
                 externals: ExternalBrightnessController(),
-                keys: BrightnessKeyTap(),
+                keys: brightnessKeys,
                 notifier: notifier,
                 signals: BoostSignalMonitor()
             )
@@ -171,6 +216,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    /// AppKit's "default launch": false when the app was launched to open a
+    /// file, run a Service, restore saved state, or otherwise not by the user
+    /// starting it (NSApplication.h). A missing key counts as a normal launch.
+    static func isDefaultLaunch(_ notification: Notification) -> Bool {
+        (notification.userInfo?[NSApplication.launchIsDefaultUserInfoKey] as? Bool) ?? true
+    }
+
+    /// The user came to Lidless (activated it, or opened the popover) after a
+    /// launch that wasn't theirs: now the first-run onboarding shows.
+    private func showDeferredOnboarding() {
+        guard onboardingDeferred else { return }
+        onboardingDeferred = false
+        guard !model.preferences.general.onboardingCompleted else { return }
+        log.info("Showing the onboarding deferred at launch")
+        statusItemController?.close()
+        windows?.showOnboarding()
+    }
+
+    func applicationDidBecomeActive(_ notification: Notification) {
+        showDeferredOnboarding()
+    }
+
     @objc private func openPopoverAfterLaunch() {
         statusItemController?.open()
     }
@@ -199,10 +266,66 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         openSettings(.deskMode)
     }
 
+    @objc private func showOnboardingFromMenu(_ sender: Any?) {
+        windows?.showOnboarding()
+    }
+
+    /// ⌘, the popover's gear and its footer's "Settings…".
     private func openSettings(_ tab: SettingsTab) {
         statusItemController?.close()
-        // The Settings window arrives in a later stage; this is its entry point.
-        log.debug("Settings requested: \(tab.rawValue, privacy: .public)")
+        windows?.showSettings(tab)
+    }
+
+    // MARK: Settings actions
+
+    private func makeSettingsActions() -> SettingsActions {
+        SettingsActions(
+            testSafetyNet: { [weak self] in self?.deskModeController?.testSafetyNet() },
+            awaitPanicKey: { [weak self] pressed in self?.deskModeController?.awaitPanicKey(pressed) },
+            cancelAwaitPanicKey: { [weak self] in self?.deskModeController?.cancelAwaitPanicKey() },
+            setRecordingShortcut: { [weak self] recording in self?.hotKeys?.isPaused = recording },
+            openDisplaysSettings: { Self.openDisplaysSettings() },
+            requestKeyPermission: { [weak self] in
+                self?.brightnessKeys?.requestPermission()
+                // Starts the tap at once if the grant already stands.
+                self?.boostController?.updateKeyTap()
+            },
+            checkForUpdates: { [weak self] in self?.log.info("Check for updates: no updater until Phase 6") },
+            openSourceOnGitHub: { Self.openSourceOnGitHub() },
+            keyPermission: { [weak self] in self?.brightnessKeys?.permission ?? .notDetermined },
+            openInputMonitoringSettings: { Self.openInputMonitoringSettings() }
+        )
+    }
+
+    /// System Settings › Displays (System Preferences before macOS 13).
+    private static func openDisplaysSettings() {
+        let pane: String
+        if #available(macOS 13, *) {
+            pane = "x-apple.systempreferences:com.apple.Displays-Settings.extension"
+        } else {
+            pane = "x-apple.systempreferences:com.apple.preference.displays"
+        }
+        guard let url = URL(string: pane) else { return }
+        NSWorkspace.shared.open(url)
+    }
+
+    /// System Settings › Privacy & Security › Input Monitoring. The
+    /// `com.apple.preference.security` anchor opens it on macOS 12 and still
+    /// resolves in System Settings on 13 and later; the Privacy & Security
+    /// extension is the fallback if a release stops resolving it.
+    private static func openInputMonitoringSettings() {
+        let panes = [
+            "x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent",
+            "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension?Privacy_ListenEvent",
+        ]
+        for pane in panes {
+            if let url = URL(string: pane), NSWorkspace.shared.open(url) { return }
+        }
+    }
+
+    private static func openSourceOnGitHub() {
+        guard let url = URL(string: "https://github.com/MRXGAMER999/Lidless") else { return }
+        NSWorkspace.shared.open(url)
     }
 
     private func quit() {

@@ -168,9 +168,24 @@ struct BrightnessScaleCurveTests {
         (DisplayFixtures.panel, true, 800, 600, 800, true),
         // The setting can't push white past the panel's outdoor maximum.
         (DisplayFixtures.panel, true, 2000, 600, 1000, true),
-        (DisplayFixtures.panel, true, 400, 600, 600, true),
+        // A ceiling at or below normal max starts one step above it, like Settings.
+        (DisplayFixtures.panel, true, 400, 600, 650, true),
+        (DisplayFixtures.panel, true, 550, 600, 650, true),
+        (DisplayFixtures.panel, true, 600, 600, 650, true),
+        (DisplayFixtures.panel, true, 1000, 600, 1000, true),
+        (DisplayFixtures.panel, false, 800, 600, 600, true),
         (PanelBrightnessInfo(userMaxNits: 600), true, nil, 600, 1000, false),
         (PanelBrightnessInfo(), true, nil, 500, 1000, false),
+        (PanelBrightnessInfo(userMaxNits: 500), true, 550, 500, 550, false),
+        (PanelBrightnessInfo(userMaxNits: 500), true, 600, 500, 600, false),
+        (PanelBrightnessInfo(userMaxNits: 950), true, 600, 950, 1000, false),
+        // No room above normal max: no Boost range, whatever the setting.
+        (PanelBrightnessInfo(userMaxNits: 1000), true, 1000, 1000, 1000, false),
+        (PanelBrightnessInfo(userMaxNits: 1000, outdoorMaxNits: 1600), true, 1000, 1000, 1000, false),
+        // Unknown normal max: the 500 nit fallback.
+        (PanelBrightnessInfo(), true, 550, 500, 550, false),
+        (PanelBrightnessInfo(), true, 600, 500, 600, false),
+        (PanelBrightnessInfo(userMaxNits: .nan), true, 600, 1, 600, false),
     ] as [(PanelBrightnessInfo, Bool, Double?, Double, Double, Bool)])
     func `the live panel scale`(info: PanelBrightnessInfo, canBoost: Bool, ceilingSetting: Double?, normal: Double, ceiling: Double, hasCurve: Bool) {
         let scale = BrightnessScale(panel: info, canBoost: canBoost, ceilingSetting: ceilingSetting)
