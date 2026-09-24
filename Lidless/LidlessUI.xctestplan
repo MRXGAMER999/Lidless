@@ -1,0 +1,29 @@
+{
+  "configurations" : [
+    {
+      "id" : "7B4F3C2D-5E6A-4F9B-8C8D-2E3F4A5B6C7D",
+      "name" : "Default",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "environmentVariableEntries" : [
+      {
+        "key" : "LIDLESS_SAFE_MODE",
+        "value" : "1"
+      }
+    ]
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:Lidless.xcodeproj",
+        "identifier" : "E2348891306511D4009D3F48",
+        "name" : "LidlessUITests"
+      }
+    }
+  ],
+  "version" : 1
+}

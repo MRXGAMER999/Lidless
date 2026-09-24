@@ -1,0 +1,25 @@
+# macOS
+.DS_Store
+
+# Xcode
+xcuserdata/
+*.xcuserstate
+DerivedData/
+build/
+*.xcresult
+
+# SwiftPM
+.build/
+.swiftpm/
+
+# Local research notes (not part of the repo)
+.research/
+
+# Release output
+dist/
+
+# Local agent skills (Apple Agent Skills, not ours to redistribute)
+.claude/
+
+# Design sources (kept locally, not published)
+design/

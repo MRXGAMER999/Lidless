@@ -1,0 +1,94 @@
+{
+  "fill-specializations": [
+    {
+      "value": {
+        "linear-gradient": [
+          "srgb:1.00000,0.76863,0.00000,1.00000",
+          "srgb:1.00000,0.72549,0.00000,1.00000"
+        ],
+        "orientation": {
+          "start": {
+            "x": 0.5,
+            "y": 0
+          },
+          "stop": {
+            "x": 0.5,
+            "y": 1
+          }
+        }
+      }
+    },
+    {
+      "appearance": "dark",
+      "value": {
+        "linear-gradient": [
+          "srgb:1.00000,0.76863,0.00000,1.00000",
+          "srgb:1.00000,0.72549,0.00000,1.00000"
+        ],
+        "orientation": {
+          "start": {
+            "x": 0.5,
+            "y": 0
+          },
+          "stop": {
+            "x": 0.5,
+            "y": 1
+          }
+        }
+      }
+    }
+  ],
+  "groups": [
+    {
+      "name": "Laptop",
+      "layers": [
+        {
+          "name": "4_Slash",
+          "image-name": "4_Slash.svg",
+          "glass": false
+        },
+        {
+          "name": "3_Laptop",
+          "image-name": "3_Laptop.svg",
+          "glass": false
+        }
+      ],
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.5
+      },
+      "translucency": {
+        "enabled": false,
+        "value": 0.5
+      }
+    },
+    {
+      "name": "Monitor",
+      "layers": [
+        {
+          "name": "2_Sun",
+          "image-name": "2_Sun.svg",
+          "glass": false
+        },
+        {
+          "name": "1_Monitor",
+          "image-name": "1_Monitor.svg",
+          "glass": false
+        }
+      ],
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.5
+      },
+      "translucency": {
+        "enabled": false,
+        "value": 0.5
+      }
+    }
+  ],
+  "supported-platforms": {
+    "squares": [
+      "macOS"
+    ]
+  }
+}

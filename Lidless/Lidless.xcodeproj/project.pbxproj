@@ -1,0 +1,863 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 110;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		E23488B130651238009D3F48 /* LidlessCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E23488A830651238009D3F48 /* LidlessCore.framework */; };
+		E23488BB30651238009D3F48 /* LidlessCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E23488A830651238009D3F48 /* LidlessCore.framework */; };
+		E23488BC30651238009D3F48 /* LidlessCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = E23488A830651238009D3F48 /* LidlessCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		E2348889306511D4009D3F48 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E2348873306511D2009D3F48 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E234887A306511D2009D3F48;
+			remoteInfo = Lidless;
+		};
+		E2348893306511D4009D3F48 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E2348873306511D2009D3F48 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E234887A306511D2009D3F48;
+			remoteInfo = Lidless;
+		};
+		E23488B230651238009D3F48 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E2348873306511D2009D3F48 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E23488A730651238009D3F48;
+			remoteInfo = LidlessCore;
+		};
+		E23488B430651238009D3F48 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E2348873306511D2009D3F48 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E234887A306511D2009D3F48;
+			remoteInfo = Lidless;
+		};
+		E23488B930651238009D3F48 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E2348873306511D2009D3F48 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E23488A730651238009D3F48;
+			remoteInfo = LidlessCore;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		E23488C030651238009D3F48 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			dstPath = "";
+			dstSubfolder = Frameworks;
+			files = (
+				E23488BC30651238009D3F48 /* LidlessCore.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		E234887B306511D2009D3F48 /* Lidless.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Lidless.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E2348888306511D4009D3F48 /* LidlessTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LidlessTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		E2348892306511D4009D3F48 /* LidlessUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LidlessUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		E23488A830651238009D3F48 /* LidlessCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = LidlessCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		E23488B030651238009D3F48 /* LidlessCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LidlessCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		E234887D306511D2009D3F48 /* Lidless */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Lidless;
+			sourceTree = "<group>";
+		};
+		E234888B306511D4009D3F48 /* LidlessTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = LidlessTests;
+			sourceTree = "<group>";
+		};
+		E2348895306511D4009D3F48 /* LidlessUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = LidlessUITests;
+			sourceTree = "<group>";
+		};
+		E23488A930651238009D3F48 /* LidlessCore */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = LidlessCore;
+			sourceTree = "<group>";
+		};
+		E23488B630651238009D3F48 /* LidlessCoreTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = LidlessCoreTests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		E2348878306511D2009D3F48 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+				E23488BB30651238009D3F48 /* LidlessCore.framework in Frameworks */,
+			);
+		};
+		E2348885306511D4009D3F48 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+		E234888F306511D4009D3F48 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+		E23488A530651238009D3F48 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+		E23488AD30651238009D3F48 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+				E23488B130651238009D3F48 /* LidlessCore.framework in Frameworks */,
+			);
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		E2348872306511D2009D3F48 = {
+			isa = PBXGroup;
+			children = (
+				E234887D306511D2009D3F48 /* Lidless */,
+				E234888B306511D4009D3F48 /* LidlessTests */,
+				E2348895306511D4009D3F48 /* LidlessUITests */,
+				E23488A930651238009D3F48 /* LidlessCore */,
+				E23488B630651238009D3F48 /* LidlessCoreTests */,
+				E234887C306511D2009D3F48 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		E234887C306511D2009D3F48 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				E234887B306511D2009D3F48 /* Lidless.app */,
+				E2348888306511D4009D3F48 /* LidlessTests.xctest */,
+				E2348892306511D4009D3F48 /* LidlessUITests.xctest */,
+				E23488A830651238009D3F48 /* LidlessCore.framework */,
+				E23488B030651238009D3F48 /* LidlessCoreTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		E23488A330651238009D3F48 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			files = (
+			);
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		E234887A306511D2009D3F48 /* Lidless */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E234889A306511D4009D3F48 /* Build configuration list for PBXNativeTarget "Lidless" */;
+			buildPhases = (
+				E2348877306511D2009D3F48 /* Sources */,
+				E2348878306511D2009D3F48 /* Frameworks */,
+				E2348879306511D2009D3F48 /* Resources */,
+				E23488C030651238009D3F48 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E23488BA30651238009D3F48 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				E234887D306511D2009D3F48 /* Lidless */,
+			);
+			name = Lidless;
+			productName = Lidless;
+			productReference = E234887B306511D2009D3F48 /* Lidless.app */;
+			productType = "com.apple.product-type.application";
+		};
+		E2348887306511D4009D3F48 /* LidlessTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E234889D306511D4009D3F48 /* Build configuration list for PBXNativeTarget "LidlessTests" */;
+			buildPhases = (
+				E2348884306511D4009D3F48 /* Sources */,
+				E2348885306511D4009D3F48 /* Frameworks */,
+				E2348886306511D4009D3F48 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E234888A306511D4009D3F48 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				E234888B306511D4009D3F48 /* LidlessTests */,
+			);
+			name = LidlessTests;
+			productName = LidlessTests;
+			productReference = E2348888306511D4009D3F48 /* LidlessTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		E2348891306511D4009D3F48 /* LidlessUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E23488A0306511D4009D3F48 /* Build configuration list for PBXNativeTarget "LidlessUITests" */;
+			buildPhases = (
+				E234888E306511D4009D3F48 /* Sources */,
+				E234888F306511D4009D3F48 /* Frameworks */,
+				E2348890306511D4009D3F48 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E2348894306511D4009D3F48 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				E2348895306511D4009D3F48 /* LidlessUITests */,
+			);
+			name = LidlessUITests;
+			productName = LidlessUITests;
+			productReference = E2348892306511D4009D3F48 /* LidlessUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		E23488A730651238009D3F48 /* LidlessCore */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E23488BD30651238009D3F48 /* Build configuration list for PBXNativeTarget "LidlessCore" */;
+			buildPhases = (
+				E23488A330651238009D3F48 /* Headers */,
+				E23488A430651238009D3F48 /* Sources */,
+				E23488A530651238009D3F48 /* Frameworks */,
+				E23488A630651238009D3F48 /* Resources */,
+			);
+			buildRules = (
+			);
+			fileSystemSynchronizedGroups = (
+				E23488A930651238009D3F48 /* LidlessCore */,
+			);
+			name = LidlessCore;
+			productName = LidlessCore;
+			productReference = E23488A830651238009D3F48 /* LidlessCore.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		E23488AF30651238009D3F48 /* LidlessCoreTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E23488C130651238009D3F48 /* Build configuration list for PBXNativeTarget "LidlessCoreTests" */;
+			buildPhases = (
+				E23488AC30651238009D3F48 /* Sources */,
+				E23488AD30651238009D3F48 /* Frameworks */,
+				E23488AE30651238009D3F48 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E23488B330651238009D3F48 /* PBXTargetDependency */,
+				E23488B530651238009D3F48 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				E23488B630651238009D3F48 /* LidlessCoreTests */,
+			);
+			name = LidlessCoreTests;
+			productName = LidlessCoreTests;
+			productReference = E23488B030651238009D3F48 /* LidlessCoreTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		E2348873306511D2009D3F48 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2700;
+				LastUpgradeCheck = 2700;
+				TargetAttributes = {
+					E234887A306511D2009D3F48 = {
+						CreatedOnToolsVersion = 27.0;
+					};
+					E2348887306511D4009D3F48 = {
+						CreatedOnToolsVersion = 27.0;
+						TestTargetID = E234887A306511D2009D3F48;
+					};
+					E2348891306511D4009D3F48 = {
+						CreatedOnToolsVersion = 27.0;
+						TestTargetID = E234887A306511D2009D3F48;
+					};
+					E23488A730651238009D3F48 = {
+						CreatedOnToolsVersion = 27.0;
+					};
+					E23488AF30651238009D3F48 = {
+						CreatedOnToolsVersion = 27.0;
+						TestTargetID = E234887A306511D2009D3F48;
+					};
+				};
+			};
+			buildConfigurationList = E2348876306511D2009D3F48 /* Build configuration list for PBXProject "Lidless" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = E2348872306511D2009D3F48;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = E234887C306511D2009D3F48 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				E234887A306511D2009D3F48 /* Lidless */,
+				E2348887306511D4009D3F48 /* LidlessTests */,
+				E2348891306511D4009D3F48 /* LidlessUITests */,
+				E23488A730651238009D3F48 /* LidlessCore */,
+				E23488AF30651238009D3F48 /* LidlessCoreTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		E2348879306511D2009D3F48 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+		E2348886306511D4009D3F48 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+		E2348890306511D4009D3F48 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+		E23488A630651238009D3F48 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+		E23488AE30651238009D3F48 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		E2348877306511D2009D3F48 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
+		E2348884306511D4009D3F48 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
+		E234888E306511D4009D3F48 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
+		E23488A430651238009D3F48 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
+		E23488AC30651238009D3F48 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		E234888A306511D4009D3F48 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E234887A306511D2009D3F48 /* Lidless */;
+			targetProxy = E2348889306511D4009D3F48 /* PBXContainerItemProxy */;
+		};
+		E2348894306511D4009D3F48 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E234887A306511D2009D3F48 /* Lidless */;
+			targetProxy = E2348893306511D4009D3F48 /* PBXContainerItemProxy */;
+		};
+		E23488B330651238009D3F48 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E23488A730651238009D3F48 /* LidlessCore */;
+			targetProxy = E23488B230651238009D3F48 /* PBXContainerItemProxy */;
+		};
+		E23488B530651238009D3F48 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E234887A306511D2009D3F48 /* Lidless */;
+			targetProxy = E23488B430651238009D3F48 /* PBXContainerItemProxy */;
+		};
+		E23488BA30651238009D3F48 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E23488A730651238009D3F48 /* LidlessCore */;
+			targetProxy = E23488B930651238009D3F48 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		E2348898306511D4009D3F48 /* Debug configuration for PBXProject "Lidless" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		E2348899306511D4009D3F48 /* Release configuration for PBXProject "Lidless" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		E234889B306511D4009D3F48 /* Debug configuration for PBXNativeTarget "Lidless" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = arm64;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Ahmed Abbas Rashed. MIT License.";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.mrxgamer999.Lidless;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = NO;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		E234889C306511D4009D3F48 /* Release configuration for PBXNativeTarget "Lidless" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = arm64;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Ahmed Abbas Rashed. MIT License.";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.mrxgamer999.Lidless;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = NO;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		E234889E306511D4009D3F48 /* Debug configuration for PBXNativeTarget "LidlessTests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.mrxgamer999.LidlessTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Lidless.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Lidless";
+			};
+			name = Debug;
+		};
+		E234889F306511D4009D3F48 /* Release configuration for PBXNativeTarget "LidlessTests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.mrxgamer999.LidlessTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Lidless.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Lidless";
+			};
+			name = Release;
+		};
+		E23488A1306511D4009D3F48 /* Debug configuration for PBXNativeTarget "LidlessUITests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.mrxgamer999.LidlessUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+				TEST_TARGET_NAME = Lidless;
+			};
+			name = Debug;
+		};
+		E23488A2306511D4009D3F48 /* Release configuration for PBXNativeTarget "LidlessUITests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.mrxgamer999.LidlessUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+				TEST_TARGET_NAME = Lidless;
+			};
+			name = Release;
+		};
+		E23488BE30651238009D3F48 /* Debug configuration for PBXNativeTarget "LidlessCore" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALLOW_TARGET_PLATFORM_SPECIALIZATION = NO;
+				ARCHS = arm64;
+				BUILD_LIBRARY_FOR_DISTRIBUTION = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_MODULE_VERIFIER = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = (
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				MARKETING_VERSION = 0.1.0;
+				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
+				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.mrxgamer999.Lidless.LidlessCore;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_INSTALL_MODULE = YES;
+				SWIFT_INSTALL_OBJC_HEADER = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		E23488BF30651238009D3F48 /* Release configuration for PBXNativeTarget "LidlessCore" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALLOW_TARGET_PLATFORM_SPECIALIZATION = NO;
+				ARCHS = arm64;
+				BUILD_LIBRARY_FOR_DISTRIBUTION = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_MODULE_VERIFIER = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = (
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				MARKETING_VERSION = 0.1.0;
+				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
+				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.mrxgamer999.Lidless.LidlessCore;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_INSTALL_MODULE = YES;
+				SWIFT_INSTALL_OBJC_HEADER = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		E23488C230651238009D3F48 /* Debug configuration for PBXNativeTarget "LidlessCoreTests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.mrxgamer999.Lidless.LidlessCoreTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Lidless.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Lidless";
+				XROS_DEPLOYMENT_TARGET = 27.0;
+			};
+			name = Debug;
+		};
+		E23488C330651238009D3F48 /* Release configuration for PBXNativeTarget "LidlessCoreTests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.mrxgamer999.Lidless.LidlessCoreTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Lidless.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Lidless";
+				XROS_DEPLOYMENT_TARGET = 27.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		E2348876306511D2009D3F48 /* Build configuration list for PBXProject "Lidless" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E2348898306511D4009D3F48 /* Debug configuration for PBXProject "Lidless" */,
+				E2348899306511D4009D3F48 /* Release configuration for PBXProject "Lidless" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		E234889A306511D4009D3F48 /* Build configuration list for PBXNativeTarget "Lidless" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E234889B306511D4009D3F48 /* Debug configuration for PBXNativeTarget "Lidless" */,
+				E234889C306511D4009D3F48 /* Release configuration for PBXNativeTarget "Lidless" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		E234889D306511D4009D3F48 /* Build configuration list for PBXNativeTarget "LidlessTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E234889E306511D4009D3F48 /* Debug configuration for PBXNativeTarget "LidlessTests" */,
+				E234889F306511D4009D3F48 /* Release configuration for PBXNativeTarget "LidlessTests" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		E23488A0306511D4009D3F48 /* Build configuration list for PBXNativeTarget "LidlessUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E23488A1306511D4009D3F48 /* Debug configuration for PBXNativeTarget "LidlessUITests" */,
+				E23488A2306511D4009D3F48 /* Release configuration for PBXNativeTarget "LidlessUITests" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		E23488BD30651238009D3F48 /* Build configuration list for PBXNativeTarget "LidlessCore" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E23488BE30651238009D3F48 /* Debug configuration for PBXNativeTarget "LidlessCore" */,
+				E23488BF30651238009D3F48 /* Release configuration for PBXNativeTarget "LidlessCore" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		E23488C130651238009D3F48 /* Build configuration list for PBXNativeTarget "LidlessCoreTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E23488C230651238009D3F48 /* Debug configuration for PBXNativeTarget "LidlessCoreTests" */,
+				E23488C330651238009D3F48 /* Release configuration for PBXNativeTarget "LidlessCoreTests" */,
+			);
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = E2348873306511D2009D3F48 /* Project object */;
+	validationLevel = 1;
+}

@@ -1,0 +1,36 @@
+{
+  "configurations" : [
+    {
+      "id" : "6A3E2B1C-4D5F-4E8A-9B7C-1D2E3F4A5B6C",
+      "name" : "Default",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "environmentVariableEntries" : [
+      {
+        "key" : "LIDLESS_SAFE_MODE",
+        "value" : "1"
+      }
+    ]
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:Lidless.xcodeproj",
+        "identifier" : "E23488AF30651238009D3F48",
+        "name" : "LidlessCoreTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Lidless.xcodeproj",
+        "identifier" : "E2348887306511D4009D3F48",
+        "name" : "LidlessTests"
+      }
+    }
+  ],
+  "version" : 1
+}

@@ -1,0 +1,283 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%@ brightness" : {
+      "comment" : "VoiceOver label of an external display's brightness slider; the variable is the display name"
+    },
+    "%@ · Extended" : {
+      "comment" : "External display row subtitle; the variable is a resolution such as 5K or 1080p"
+    },
+    "%@ · Main display" : {
+      "comment" : "External display row subtitle; the variable is a resolution such as 5K or 1080p"
+    },
+    "%@ · Mirrored" : {
+      "comment" : "External display row subtitle; the variable is a resolution such as 5K or 1080p"
+    },
+    "%@, Boost" : {
+      "comment" : "VoiceOver value of the built-in brightness slider while boosted, e.g. \"160%, Boost\""
+    },
+    "%lld displays" : {
+      "comment" : "Popover status line segment: number of lit displays",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "new",
+                  "value" : "%lld display"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "new",
+                  "value" : "%lld displays"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "**Boost on · ≈ %@ nits.** Uses more battery and heat. Steps back by itself if your Mac gets hot." : {
+      "comment" : "Boost callout in the popover; the variable is the estimated brightness in nits"
+    },
+    "About Lidless" : {
+      "comment" : "App menu item"
+    },
+    "Back to 100%" : {
+      "comment" : "Popover button that leaves Boost and sets the built-in screen to full normal brightness. The hint “or press brightness down” follows it on the same line, so the two read as one sentence: “[Back to 100%] or press brightness down”."
+    },
+    "Boost" : {
+      "comment" : "Label under the Boost range of the built-in brightness slider"
+    },
+    "Bringing the built-in screen back." : {
+      "comment" : "Desk Mode card description while turning off"
+    },
+    "Built-in Display" : {
+      "comment" : "Title of the popover's built-in display card"
+    },
+    "Built-in display brightness" : {
+      "comment" : "VoiceOver label of the built-in brightness slider"
+    },
+    "Built-in off" : {
+      "comment" : "Popover status line segment: the built-in screen is off"
+    },
+    "Built-in only" : {
+      "comment" : "Popover status line segment: no external displays"
+    },
+    "Built-in screen is off. Lid stays open to keep it cool." : {
+      "comment" : "Desk Mode card description when on"
+    },
+    "BuiltInDisplay.Readout.Off" : {
+      "comment" : "Readout at the right of the built-in display card's title while Desk Mode has switched the screen off (in place of a percentage). Describes the screen, not a setting.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Off"
+          }
+        }
+      }
+    },
+    "Close" : {
+      "comment" : "Window menu item"
+    },
+    "Command" : {
+      "comment" : "Spoken name of the Command key"
+    },
+    "Control" : {
+      "comment" : "Spoken name of the Control key"
+    },
+    "Copy" : {
+      "comment" : "Edit menu item"
+    },
+    "Cut" : {
+      "comment" : "Edit menu item"
+    },
+    "DESK MODE" : {
+      "comment" : "Overline of the popover's Desk Mode card"
+    },
+    "Desk Mode" : {
+      "comment" : "VoiceOver label of the Desk Mode switch"
+    },
+    "Desk Mode, unavailable" : {
+      "comment" : "VoiceOver label of the Desk Mode switch when it can't be used"
+    },
+    "DeskMode.Title.Off" : {
+      "comment" : "Desk Mode card title: Desk Mode (the setting) is off. Shown large above the card's description.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Off"
+          }
+        }
+      }
+    },
+    "DeskMode.Title.On" : {
+      "comment" : "Desk Mode card title: Desk Mode (the setting) is on. Shown large above the card's description.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "On"
+          }
+        }
+      }
+    },
+    "EXTERNAL DISPLAYS" : {
+      "comment" : "Section heading in the popover, uppercase by design"
+    },
+    "Edit" : {
+      "comment" : "Main menu title"
+    },
+    "Hide Lidless" : {
+      "comment" : "App menu item"
+    },
+    "Lid closed" : {
+      "comment" : "Desk Mode card title when the MacBook lid is closed\nPopover status line segment"
+    },
+    "Lid open" : {
+      "comment" : "Popover status line segment"
+    },
+    "Lidless" : {
+      "comment" : "Accessibility title of the menu bar popover"
+    },
+    "Lidless menu" : {
+      "comment" : "VoiceOver label of the menu bar icon"
+    },
+    "Lidless menu, Boost on" : {
+      "comment" : "VoiceOver label of the menu bar icon"
+    },
+    "Lidless menu, Desk Mode on" : {
+      "comment" : "VoiceOver label of the menu bar icon"
+    },
+    "Minimize" : {
+      "comment" : "Window menu item"
+    },
+    "Needs a display" : {
+      "comment" : "Desk Mode card title when no external display is connected"
+    },
+    "No external displays" : {
+      "comment" : "Empty state title in the popover's external displays section"
+    },
+    "Normal" : {
+      "comment" : "Label under the normal range of the built-in brightness slider"
+    },
+    "Not available" : {
+      "comment" : "Desk Mode card title when this Mac or macOS can't use Desk Mode"
+    },
+    "Off while Desk Mode is on. Bring it back:" : {
+      "comment" : "Built-in display card text while Desk Mode is on, followed by the panic shortcut"
+    },
+    "On battery" : {
+      "comment" : "Popover status line segment when the charge is unknown"
+    },
+    "On battery (%@)" : {
+      "comment" : "Popover status line segment; the variable is the battery charge, e.g. 64%"
+    },
+    "On power" : {
+      "comment" : "Popover status line segment"
+    },
+    "Open Settings" : {
+      "comment" : "VoiceOver label of the popover's settings button"
+    },
+    "Open the lid and Lidless can turn this screen off." : {
+      "comment" : "Desk Mode card description when the lid is closed"
+    },
+    "Option" : {
+      "comment" : "Spoken name of the Option key"
+    },
+    "Paste" : {
+      "comment" : "Edit menu item"
+    },
+    "Plug in a monitor and Lidless can turn this screen off." : {
+      "comment" : "Desk Mode card description when no external display is connected"
+    },
+    "Quit" : {
+      "comment" : "Popover footer button that quits Lidless"
+    },
+    "Quit Lidless" : {
+      "comment" : "App menu item"
+    },
+    "Redo" : {
+      "comment" : "Edit menu item"
+    },
+    "Select All" : {
+      "comment" : "Edit menu item"
+    },
+    "Settings" : {
+      "comment" : "Tooltip of the popover's settings button"
+    },
+    "Settings…" : {
+      "comment" : "App menu item that opens the Settings window\nPopover footer button that opens the Settings window"
+    },
+    "Shift" : {
+      "comment" : "Spoken name of the Shift key"
+    },
+    "The built-in screen is switching off." : {
+      "comment" : "Desk Mode card description while turning on"
+    },
+    "Thermals: Critical" : {
+      "comment" : "Popover footer heat status"
+    },
+    "Thermals: Fair" : {
+      "comment" : "Popover footer heat status"
+    },
+    "Thermals: Normal" : {
+      "comment" : "Popover footer heat status"
+    },
+    "Thermals: Serious" : {
+      "comment" : "Popover footer heat status"
+    },
+    "They'll show up here when you plug one in." : {
+      "comment" : "Empty state message in the popover's external displays section"
+    },
+    "This Mac can't bring its screen back reliably, so Lidless leaves it on." : {
+      "comment" : "Desk Mode card description on unsupported Macs"
+    },
+    "This version of macOS can't turn the screen off safely." : {
+      "comment" : "Desk Mode card description on unsupported macOS versions"
+    },
+    "Turn the built-in screen off. The lid stays open for cooling." : {
+      "comment" : "Desk Mode card description when off"
+    },
+    "Turned on by itself at %@, when %@ connected." : {
+      "comment" : "Desk Mode card footer after the automatic rule turned it on; the variables are the time and the display name",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Turned on by itself at %1$@, when %2$@ connected."
+          }
+        }
+      }
+    },
+    "Turning off…" : {
+      "comment" : "Desk Mode card title while the built-in screen comes back"
+    },
+    "Turning on…" : {
+      "comment" : "Desk Mode card title while the built-in screen switches off"
+    },
+    "Undo" : {
+      "comment" : "Edit menu item"
+    },
+    "Window" : {
+      "comment" : "Main menu title"
+    },
+    "or press brightness down" : {
+      "comment" : "Hint to the right of the “Back to 100%” button that finishes the sentence “[Back to 100%] or press brightness down”, so it starts in lowercase. If your language can’t continue the button’s label this way, translate it as a phrase that stands alone, such as “Or press the brightness-down key.” “brightness down” is the keyboard key that dims the screen (F1)."
+    },
+    "≈ %@ nits" : {
+      "comment" : "Hint under the built-in brightness slider when Boost is off; the variable is the estimated brightness in nits"
+    },
+    "≈ %@ nits · Drag past the line to boost" : {
+      "comment" : "Hint under the built-in brightness slider; the variable is the estimated brightness in nits"
+    }
+  },
+  "version" : "1.0"
+}
