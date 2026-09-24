@@ -3,9 +3,9 @@ import CoreFoundation
 import Darwin
 
 // Private framework entry points, resolved at run time: a symbol Apple removes
-// turns a feature off instead of crashing at launch. Phase 2 declares getters
-// only. No setter, configuration or DDC entry point belongs in this file
-// before Phase 3.
+// turns a feature off instead of crashing at launch. Phase 2 declared getters
+// only; Phase 3 adds SkyLight's display enable bit for Desk Mode. Brightness
+// setters wait for Phase 4, and no DDC entry point belongs in this file.
 
 nonisolated enum PrivateFramework {
     static let coreDisplay = "/System/Library/Frameworks/CoreDisplay.framework/CoreDisplay"
@@ -66,10 +66,26 @@ nonisolated enum DisplayServicesAPI {
     }
 }
 
-/// SkyLight, for Desk Mode. Phase 2 only checks the calls exist, so no callable
-/// type is declared here.
+/// SkyLight's display list and enable bit, for Desk Mode. Every call goes
+/// through `DisplayConfigTransaction`, which owns the safety rules.
 nonisolated enum SkyLightAPI {
-    static let deskModeCallsPresent: Bool =
-        PrivateFramework.exports(PrivateFramework.skyLight, ["SLSConfigureDisplayEnabled", "CGSConfigureDisplayEnabled"])
-        && PrivateFramework.exports(PrivateFramework.skyLight, ["SLSGetDisplayList", "CGSGetDisplayList"])
+    /// Must run on a `CGBeginDisplayConfiguration` transaction. The flag is a C `bool`.
+    typealias ConfigureDisplayEnabledFn = @convention(c) (CGDisplayConfigRef?, CGDirectDisplayID, Bool) -> CGError
+    /// Every display WindowServer knows, disabled ones included, plus phantom
+    /// IDs (vendor 0, 1×1 px) that must never be sent an enable.
+    typealias GetDisplayListFn = @convention(c) (UInt32, UnsafeMutablePointer<CGDirectDisplayID>?, UnsafeMutablePointer<UInt32>?) -> CGError
+
+    static let configureDisplayEnabled: ConfigureDisplayEnabledFn? =
+        resolve(["SLSConfigureDisplayEnabled", "CGSConfigureDisplayEnabled"], coreGraphicsAlias: "CGSConfigureDisplayEnabled")
+    static let getDisplayList: GetDisplayListFn? =
+        resolve(["SLSGetDisplayList", "CGSGetDisplayList"], coreGraphicsAlias: "CGSGetDisplayList")
+
+    static let deskModeCallsPresent: Bool = configureDisplayEnabled != nil && getDisplayList != nil
+
+    /// SkyLight first; then the CGS alias public CoreGraphics exports, which is
+    /// always loaded, in case SkyLight's path or names move.
+    private static func resolve<T>(_ names: [String], coreGraphicsAlias: String) -> T? {
+        if let fn: T = PrivateFramework.symbol(PrivateFramework.skyLight, names) { return fn }
+        return dlsym(UnsafeMutableRawPointer(bitPattern: -2), coreGraphicsAlias).map { unsafeBitCast($0, to: T.self) }  // RTLD_DEFAULT
+    }
 }

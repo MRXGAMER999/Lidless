@@ -8,16 +8,19 @@ final class AppModel {
     let deskMode: DeskModeStore
     let brightness: BrightnessStore
     let externalBrightness: ExternalBrightnessStore
+    let preferences: PreferencesStore
 
     init(
         system: SystemStore = SystemStore(),
         deskMode: DeskModeStore = DeskModeStore(),
         brightness: BrightnessStore = BrightnessStore(),
-        externalBrightness: ExternalBrightnessStore = ExternalBrightnessStore()
+        externalBrightness: ExternalBrightnessStore = ExternalBrightnessStore(),
+        preferences: PreferencesStore = PreferencesStore()
     ) {
         self.system = system
         self.deskMode = deskMode
         self.brightness = brightness
         self.externalBrightness = externalBrightness
+        self.preferences = preferences
     }
 }

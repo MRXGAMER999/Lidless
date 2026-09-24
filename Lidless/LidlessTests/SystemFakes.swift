@@ -116,10 +116,13 @@ final class FakeClock {
     var now: TimeInterval = 1_000
 }
 
-/// A controller wired to fakes, with a fake clock in the brightness store.
+/// A controller wired to fakes, with a fake clock in the brightness store and
+/// preferences in a private UserDefaults suite. Call `cleanUp()` when a test
+/// changed them.
 @MainActor
 struct SystemRig {
     let clock = FakeClock()
+    let suiteName = "SystemRig.\(UUID().uuidString)"
     let model: AppModel
     let displays: FakeDisplays
     let changes = FakeDisplayChanges()
@@ -134,7 +137,10 @@ struct SystemRig {
         pollInterval: TimeInterval = 0.5
     ) {
         let clock = clock
-        model = AppModel(brightness: BrightnessStore(clock: { clock.now }))
+        model = AppModel(
+            brightness: BrightnessStore(clock: { clock.now }),
+            preferences: PreferencesStore(defaults: UserDefaults(suiteName: suiteName)!)
+        )
         displays = FakeDisplays(facts: facts)
         self.brightness = brightness
         controller = SystemController(
@@ -147,6 +153,10 @@ struct SystemRig {
             names: DisplayFixtures.names,
             pollInterval: pollInterval
         )
+    }
+
+    func cleanUp() {
+        UserDefaults.standard.removePersistentDomain(forName: suiteName)
     }
 
     /// The header segments the popover shows for the model right now.

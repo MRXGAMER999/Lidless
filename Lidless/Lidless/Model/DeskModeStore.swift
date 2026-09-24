@@ -4,8 +4,10 @@ import LidlessCore
 
 /// Desk Mode state and the shortcut that always brings the built-in screen back.
 ///
-/// Phase 3 connects this to the display controller and safety net; until then
-/// `setOn(_:)` only changes the published state.
+/// In a normal launch `DeskModeController` owns `state`: it sets
+/// `requestHandler`, receives every switch flip and publishes what the display
+/// actually does. Samples, previews and tests have no controller, and there
+/// `setOn(_:)` just changes the published state.
 final class DeskModeStore: ObservableObject {
     @Published private(set) var state: DeskModeState
     /// Why Desk Mode can't be used right now; nil when it can. Kept apart from
@@ -18,6 +20,10 @@ final class DeskModeStore: ObservableObject {
     /// `panicShortcut` named by the keyboard layout in use. Published so a
     /// layout switch reaches the views, and so their bodies never call Carbon.
     @Published private(set) var panicKeys: ShortcutLabels
+
+    /// Set by `DeskModeController` in a normal launch: switch flips go to it,
+    /// and `state` changes only when it publishes.
+    var requestHandler: ((Bool) -> Void)?
 
     private let keyLabel: (KeyShortcut) -> String
     private var layoutObserver: KeyboardLayoutObserver?
@@ -42,9 +48,13 @@ final class DeskModeStore: ObservableObject {
         set { setOn(newValue) }
     }
 
-    /// Phase 2: only changes the published state, in live mode too; Phase 3
-    /// connects it to the display controller and safety net.
+    /// Live: asks the controller, which may refuse and publishes the outcome.
+    /// Without a controller: changes the published state directly.
     func setOn(_ on: Bool) {
+        if let requestHandler {
+            requestHandler(on)
+            return
+        }
         guard state.isAvailable, on != state.isOn else { return }
         state = on ? .on(since: .now, trigger: .manual) : DeskModeState.off.applying(availability: unavailableReason)
     }

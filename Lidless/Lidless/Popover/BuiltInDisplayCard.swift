@@ -8,7 +8,7 @@ struct BuiltInDisplayCard: View {
     let brightness: BrightnessStore
 
     var body: some View {
-        let deskModeOn = deskMode.state.isOn
+        let deskModeOn = deskMode.state.builtInDark
         VStack(alignment: .leading, spacing: 10) {
             BuiltInTitleRow(brightness: brightness, deskModeOn: deskModeOn)
             if deskModeOn {
@@ -18,6 +18,18 @@ struct BuiltInDisplayCard: View {
             }
         }
         .glassCard()
+    }
+}
+
+extension DeskModeState {
+    /// True while Desk Mode has the built-in screen off or is switching it
+    /// either way. `isOn` is false once a restore starts, but the panel stays
+    /// dark until it finishes, so the popover keeps showing it as off.
+    var builtInDark: Bool {
+        switch self {
+        case .on, .switching: true
+        case .off, .unavailable: false
+        }
     }
 }
 

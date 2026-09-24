@@ -28,10 +28,16 @@ enum SystemEvent: Sendable, Equatable {
     case lid
     case power
     case thermal
+    /// The system is about to sleep. No display call may run until `didWake`.
+    case willSleep
     case didWake
     case screensDidSleep
     case screensDidWake
     case sessionDidBecomeActive
+    /// Fast user switching away, or the console session was taken over.
+    case sessionDidResignActive
+    /// Log out, restart or shut down is under way (it can still be cancelled).
+    case willPowerOff
 }
 
 /// Reads lid, power and heat. Each read is well under 1 ms, so callers

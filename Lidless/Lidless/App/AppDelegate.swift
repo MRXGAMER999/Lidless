@@ -1,4 +1,5 @@
 import AppKit
+import LidlessCore
 import os
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
@@ -8,6 +9,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private(set) var statusItemController: StatusItemController?
     /// Feeds `model` from the system; only a normal launch has one.
     private(set) var systemController: SystemController?
+    /// Desk Mode and its safety net; only a normal launch has one.
+    private(set) var deskModeController: DeskModeController?
+    private var hotKeys: HotKeyCenter?
+    private var signalRestorer: SignalRestorer?
+    private var notifier: UserNotifier?
 
     private let log = Logger(subsystem: "io.github.mrxgamer999.Lidless", category: "App")
 
@@ -29,11 +35,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             log.info("Started without UI (tests, previews or safe mode)")
             return
         }
+        var recoveredAfterCrash = false
         if environment.dataSource == .live {
+            // Two copies would each hold their own display configuration and
+            // fight over the crash marker.
+            if let other = SingleInstance.otherInstance() {
+                log.notice("Lidless is already running (pid \(other.processIdentifier, privacy: .public)); quitting")
+                NSApp.terminate(nil)
+                return
+            }
             // Before the status item exists, so its first frame is already live.
-            let controller = SystemController.live(model: model)
-            controller.start()
-            systemController = controller
+            recoveredAfterCrash = startLive()
         }
         let actions = PopoverActions(
             openSettings: { [weak self] tab in self?.openSettings(tab) },
@@ -48,10 +60,103 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             // Give the menu bar a moment to place the new item, so the panel opens under it.
             perform(#selector(openPopoverAfterLaunch), with: nil, afterDelay: 0.5)
         }
+        if recoveredAfterCrash { notifier?.recoveredAfterCrash() }
+    }
+
+    /// The live launch, in safety order: bring back a panel a crashed run left
+    /// off, then read the system, then let Desk Mode act on it, then the keys
+    /// and signals that end it. Returns whether a panel was restored.
+    private func startLive() -> Bool {
+        let markers = FileCrashMarkerStore()
+        let skyLight = SkyLightDisplaySwitch()
+        let blackout = BlackoutSwitch()
+        let notifier = UserNotifier()
+        self.notifier = notifier
+        let recovery = recoverFromCrash(markers: markers, disconnect: skyLight, blackout: blackout)
+
+        let system = SystemController.live(model: model)
+        let deskMode = DeskModeController(
+            model: model,
+            services: DeskModeController.Services(
+                builtIn: CompositeBuiltInSwitch(method: model.preferences.deskMode.method, disconnect: skyLight, blackout: blackout),
+                confirmation: ConfirmationPanel(deskMode: model.deskMode),
+                watchdog: SidecarWatchdog(),
+                marker: markers,
+                notifier: notifier,
+                activity: ProcessActivityHolder(),
+                hang: HangWatchdog()
+            )
+        )
+        blackout.onCoverLost = { [weak deskMode] in deskMode?.coverLost() }
+        system.deskMode = deskMode
+        deskMode.start()
+        system.start()
+        systemController = system
+        deskModeController = deskMode
+        if case let .unconfirmed(displayID, uuid, method) = recovery {
+            // With the displays read, the machine retries until the panel is back.
+            deskMode.resumeRestore(displayID: displayID, uuid: uuid, method: method)
+        }
+
+        let hotKeys = HotKeyCenter()
+        deskMode.bindHotKeys(hotKeys)
+        self.hotKeys = hotKeys
+
+        let signals = SignalRestorer()
+        signals.install { [weak self] in self?.deskModeController?.terminate() }
+        signalRestorer = signals
+        if case .restored(let notify) = recovery { return notify }
+        return false
+    }
+
+    private enum Recovery {
+        case nothing
+        case restored(notify: Bool)
+        /// The enable wasn't confirmed: Desk Mode keeps trying once it runs.
+        case unconfirmed(displayID: UInt32, uuid: String?, method: DeskModeMethod)
+    }
+
+    /// A marker from this boot means the last run died with the panel off:
+    /// turn it back on before anything else. Never re-applies Desk Mode.
+    private func recoverFromCrash(markers: any CrashMarkerStore, disconnect: any BuiltInSwitch, blackout: any BuiltInSwitch) -> Recovery {
+        let (marker, fileExists) = markers.read()
+        let decision = LaunchRecovery.decide(
+            marker: marker,
+            markerFileExists: fileExists,
+            currentBootSession: markers.currentBootSession,
+            otherInstanceRunning: marker.map { SingleInstance.isLive(pid: $0.pid) } ?? false
+        )
+        switch decision {
+        case .nothing:
+            return .nothing
+        case .discard:
+            log.info("Discarded a crash marker from an earlier boot")
+            markers.clear()
+            return .nothing
+        case let .restore(displayID, uuid, method, notify):
+            let panel: any BuiltInSwitch = method == .disconnect ? disconnect : blackout
+            let ok = panel.enableNow(displayID: displayID, uuid: uuid, timeout: DeskModeController.exitRestoreTimeout)
+            guard ok else {
+                // The marker stays, so a crash before the retries succeed still
+                // leaves it for the next launch.
+                log.error("The last run ended with Desk Mode on (\(method.rawValue, privacy: .public)); couldn't confirm the built-in is back, retrying")
+                return .unconfirmed(displayID: displayID, uuid: uuid, method: method)
+            }
+            log.notice("The last run ended with Desk Mode on (\(method.rawValue, privacy: .public)); the built-in is back")
+            markers.clear()
+            return .restored(notify: notify)
+        }
     }
 
     @objc private func openPopoverAfterLaunch() {
         statusItemController?.open()
+    }
+
+    /// Quit from anywhere (the menu, the popover, logout): the panel comes back
+    /// before the app goes.
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        deskModeController?.terminate()
+        return .terminateNow
     }
 
     func applicationWillTerminate(_ notification: Notification) {

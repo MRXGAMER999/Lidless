@@ -6,8 +6,22 @@ import os
 /// Feeds the stores from the live system. The app delegate creates one for a
 /// normal launch only; sample launches, previews, tests and safe mode never do.
 ///
-/// Phase 2 only reads: nothing here changes a display or its brightness.
+/// It only reads: nothing here changes a display or its brightness. Desk Mode
+/// gets every reading and event through `deskMode`, which decides and acts.
 final class SystemController {
+    /// Receives the display facts, lid, power, system events and availability
+    /// after the stores are updated. Set by the app delegate in a normal launch.
+    weak var deskMode: DeskModeController? {
+        didSet {
+            // Desk Mode re-reads the displays on its ticks, so losing the
+            // external never depends on a reconfiguration callback alone.
+            deskMode?.readDisplays = { [weak self] in
+                guard let self, self.isRunning else { return }
+                self.refreshDisplays()
+            }
+        }
+    }
+
     private let model: AppModel
     private let displays: DisplayReader
     private let displayChanges: DisplayChangeSource
@@ -105,6 +119,9 @@ final class SystemController {
     // MARK: Refresh
 
     func handle(_ event: SystemEvent) {
+        // First, so the fresh readings below reach Desk Mode after the event
+        // that explains them (a wake before the displays that came back).
+        deskMode?.handle(event)
         switch event {
         case .lid, .power, .thermal:
             refreshSystem()
@@ -121,21 +138,30 @@ final class SystemController {
             // Lid and power events can be lost around sleep.
             readSystem()
             refreshDisplays()
+        case .willSleep, .sessionDidResignActive, .willPowerOff:
+            // Desk Mode's business. Nothing to read: during willSleep no
+            // display call may run, and the others change no reading.
+            break
         }
     }
 
     func refreshSystem() {
         readSystem()
+        deskMode?.systemDidChange(lid: model.system.lid, power: model.system.power)
         updateAvailability()
     }
 
     func refreshDisplays() {
-        let new = DisplayInventory(facts: displays.snapshot(), previousBuiltIn: inventory.builtIn, names: names)
+        let facts = displays.snapshot()
+        let new = DisplayInventory(facts: facts, previousBuiltIn: inventory.builtIn, names: names)
         inventory = new
         model.system.update(displays: new)
         // A reference preset pins the panel's brightness, so it has no Boost range.
         let canBoost = new.builtIn?.supportsBoost == true && !new.builtInPresetLocksBrightness
         model.brightness.applyScale(BrightnessScale(panel: panel, canBoost: canBoost))
+        // The facts before availability, so a lost display reads as lost
+        // rather than as Desk Mode becoming unavailable.
+        deskMode?.displaysDidChange(facts: facts, lid: model.system.lid, power: model.system.power)
         updateAvailability()
         // Display IDs can be re-issued; follow the built-in's.
         if isPopoverShown { startBrightnessUpdates() }
@@ -168,7 +194,9 @@ final class SystemController {
             usableExternalCount: latch.count(for: inventory.usableExternalCount),
             systemCallsPresent: system.deskModeCallsPresent
         )
-        model.deskMode.applyAvailability(DeskModeAvailability.reason(for: inputs))
+        let reason = DeskModeAvailability.reason(for: inputs)
+        model.deskMode.applyAvailability(reason)
+        deskMode?.availabilityDidChange(reason)
         logSummaryIfChanged(usable: inputs.usableExternalCount)
     }
 

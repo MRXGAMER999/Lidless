@@ -121,11 +121,14 @@ private func postThermalChangeFromBackground() {
 @MainActor
 @Suite(.serialized)
 struct SystemEventMonitorTests {
+    // willPowerOff is left out: posting it, even as a fake, could reach AppKit's own logout handling.
     nonisolated static let workspaceEvents: [(Notification.Name, SystemEvent)] = [
+        (NSWorkspace.willSleepNotification, .willSleep),
         (NSWorkspace.didWakeNotification, .didWake),
         (NSWorkspace.screensDidSleepNotification, .screensDidSleep),
         (NSWorkspace.screensDidWakeNotification, .screensDidWake),
         (NSWorkspace.sessionDidBecomeActiveNotification, .sessionDidBecomeActive),
+        (NSWorkspace.sessionDidResignActiveNotification, .sessionDidResignActive),
     ]
 
     @Test func `event monitor starts and stops cleanly, twice`() async throws {

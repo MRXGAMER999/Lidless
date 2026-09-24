@@ -18,9 +18,11 @@ struct AppEnvironmentTests {
         #expect(delegate.statusItemController == nil)
     }
 
-    @Test func `the hosting app created no system controller`() throws {
+    @Test func `the hosting app created no system or Desk Mode controller`() throws {
         let delegate = try #require(NSApp.delegate as? AppDelegate)
         #expect(delegate.systemController == nil)
+        #expect(delegate.deskModeController == nil)
+        #expect(delegate.model.deskMode.requestHandler == nil)
         #expect(AppEnvironment.current.dataSource == .sample(.deskSetup))
     }
 

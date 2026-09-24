@@ -40,7 +40,7 @@ private struct HeaderStatusLine: View {
         let segments = StatusLine.segments(
             lid: system.lid,
             externalCount: system.externals.count,
-            builtInLit: !deskMode.state.isOn,
+            builtInLit: !deskMode.state.builtInDark,
             power: system.power
         )
         Text(verbatim: segments.map(\.localizedText).joined(separator: " · "))

@@ -5,10 +5,13 @@ import LidlessCore
 /// as it happens.
 final class SystemEventMonitor: SystemEventSource {
     private static let workspaceEvents: [(Notification.Name, SystemEvent)] = [
+        (NSWorkspace.willSleepNotification, .willSleep),
         (NSWorkspace.didWakeNotification, .didWake),
         (NSWorkspace.screensDidSleepNotification, .screensDidSleep),
         (NSWorkspace.screensDidWakeNotification, .screensDidWake),
         (NSWorkspace.sessionDidBecomeActiveNotification, .sessionDidBecomeActive),
+        (NSWorkspace.sessionDidResignActiveNotification, .sessionDidResignActive),
+        (NSWorkspace.willPowerOffNotification, .willPowerOff),
     ]
 
     private let lid = LidMonitor()
