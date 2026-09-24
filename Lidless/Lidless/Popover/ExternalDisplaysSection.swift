@@ -21,6 +21,7 @@ struct ExternalDisplaysSection: View {
 
 private struct ExternalDisplayList: View {
     let displays: [DisplayDescriptor]
+    /// Levels, and how each display is dimmed: shades get a hint, probing rows wait.
     @ObservedObject var brightness: ExternalBrightnessStore
     @Binding var fit: PanelFit
     /// The rows' full height, scrolling or not.
@@ -47,19 +48,36 @@ private struct ExternalDisplayList: View {
         let firstID = displays.first?.id
         return VStack(spacing: 0) {
             ForEach(displays) { display in
+                let method = brightness.method(for: display.id)
+                let probing = method == .probing
                 DisplayRow(
                     name: display.name,
-                    subtitle: subtitle(resolutionClass: display.resolutionClass, role: display.role),
-                    level: $brightness[levelFor: display.id],
+                    subtitle: subtitle(resolutionClass: display.resolutionClass, role: display.role, method: method),
+                    level: probing ? .constant(brightness.level(for: display.id)) : $brightness[levelFor: display.id],
                     showsDivider: display.id != firstID
                 )
+                // Until the probe picks DDC or a shade there's nothing to apply a level through.
+                .disabled(probing)
+                .opacity(probing ? 0.5 : 1)
+                .help(method == .shade ? shadeHelp : Text(verbatim: ""))
             }
         }
         .onSizeChange { contentHeight = $0.height }
     }
 
-    private func subtitle(resolutionClass: String, role: DisplayDescriptor.Role) -> Text {
-        switch role {
+    /// Tooltip on shaded rows (not designed).
+    private var shadeHelp: Text {
+        Text("This display doesn't take brightness commands, so Lidless darkens its picture instead.", comment: "Tooltip on an external display row whose brightness Lidless changes with a dark overlay, because the monitor ignores DDC brightness commands")
+    }
+
+    /// "{resolution} · {role}", or "{resolution} · Dimmed by Lidless" when the
+    /// slider drives a shade: the row has no room for all three, and on a
+    /// shade the method matters more than the role. DDC, native and not yet known: no hint.
+    private func subtitle(resolutionClass: String, role: DisplayDescriptor.Role, method: ExternalBrightnessMethod?) -> Text {
+        if method == .shade {
+            return Text("\(resolutionClass) · Dimmed by Lidless", comment: "External display row subtitle when the monitor can't change its own brightness, so Lidless darkens the picture with an overlay; the variable is a resolution such as 5K or 1080p. Keep it short: it shares one line with the slider.")
+        }
+        return switch role {
         case .main:
             Text("\(resolutionClass) · Main display", comment: "External display row subtitle; the variable is a resolution such as 5K or 1080p")
         case .extended:

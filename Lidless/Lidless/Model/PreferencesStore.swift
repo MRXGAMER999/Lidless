@@ -3,16 +3,18 @@ import Foundation
 import LidlessCore
 import os
 
-/// The user's saved choices: Desk Mode's settings and the global shortcuts.
-/// Each is one JSON value in UserDefaults, so a new field decodes from older
-/// saves with its default (see `DeskModeSettings` and `ShortcutSet`).
+/// The user's saved choices: Desk Mode's and Boost's settings and the global
+/// shortcuts. Each is one JSON value in UserDefaults, so a new field decodes
+/// from older saves with its default (see `DeskModeSettings`, `BoostSettings`
+/// and `ShortcutSet`).
 ///
-/// Phase 3 only reads and writes them; the Settings window (Phase 5) edits them.
+/// The app only reads and writes them; the Settings window (Phase 5) edits them.
 /// A value that can't be decoded falls back to the defaults and is left on disk
 /// until the next change overwrites it.
 final class PreferencesStore: ObservableObject {
     static let deskModeKey = "deskMode.settings"
     static let shortcutsKey = "shortcuts"
+    static let boostKey = "boost.settings"
 
     @Published var deskMode: DeskModeSettings {
         didSet { if deskMode != oldValue { save(deskMode, forKey: Self.deskModeKey) } }
@@ -20,6 +22,11 @@ final class PreferencesStore: ObservableObject {
 
     @Published var shortcuts: ShortcutSet {
         didSet { if shortcuts != oldValue { save(shortcuts, forKey: Self.shortcutsKey) } }
+    }
+
+    /// Settings › Brightness.
+    @Published var boost: BoostSettings {
+        didSet { if boost != oldValue { save(boost, forKey: Self.boostKey) } }
     }
 
     private let defaults: UserDefaults
@@ -30,6 +37,7 @@ final class PreferencesStore: ObservableObject {
         self.defaults = defaults
         deskMode = Self.load(DeskModeSettings.self, forKey: Self.deskModeKey, from: defaults) ?? .defaults
         shortcuts = Self.load(ShortcutSet.self, forKey: Self.shortcutsKey, from: defaults) ?? .defaults
+        boost = Self.load(BoostSettings.self, forKey: Self.boostKey, from: defaults) ?? .defaults
     }
 
     private static func load<Value: Decodable>(_ type: Value.Type, forKey key: String, from defaults: UserDefaults) -> Value? {

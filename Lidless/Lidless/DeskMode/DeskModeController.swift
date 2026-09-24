@@ -87,6 +87,12 @@ final class DeskModeController {
     /// arrive through `displaysDidChange`.
     var readDisplays: (() -> Void)?
 
+    /// Boost hears when Desk Mode leaves idle (before the disable runs) and
+    /// returns to it, and gets the panic key. Set by the app delegate.
+    weak var boost: (any DeskModeBoostInterlock)?
+    /// What Boost was last told: (engaged, switching).
+    private var reportedToBoost = (engaged: false, switching: false)
+
     nonisolated(unsafe) private var tickTimer: Timer?
     /// Fires just after the prompt's deadline, so the screen comes back as the
     /// countdown reaches 0 rather than on the next 1 s tick.
@@ -231,6 +237,7 @@ final class DeskModeController {
     /// The panic key: always sends an enable, whatever the machine thinks.
     func panic() {
         log.notice("Panic key")
+        boost?.panic()
         declineRule()
         send(.panic)
     }
@@ -386,6 +393,8 @@ final class DeskModeController {
             if machine.phase != before {
                 log.info("\(Self.describe(before), privacy: .public) → \(Self.describe(self.machine.phase), privacy: .public) on \(Self.describe(event), privacy: .public)")
             }
+            // Before the commands: the Boost overlay must be gone before a disable starts.
+            reportToBoost()
             for command in commands { run(command) }
         }
         isProcessing = false
@@ -476,6 +485,20 @@ final class DeskModeController {
         case let .refused(refusal):
             log.notice("Desk Mode refused: \(Self.describe(refusal), privacy: .public)")
         }
+    }
+
+    private func reportToBoost() {
+        // The keep-or-revert prompt counts as switching: its Revert (or the
+        // deadline) enables the panel again at any moment, so DDC stays quiet.
+        let switching: Bool
+        switch machine.phase {
+        case .engaging, .confirming, .restoring: switching = true
+        case .idle, .active: switching = false
+        }
+        let state = (engaged: machine.phase != .idle, switching: switching)
+        guard state != reportedToBoost else { return }
+        reportedToBoost = state
+        boost?.deskModeDidChange(engaged: state.engaged, switching: state.switching)
     }
 
     private func setWatchdogDeadline(_ deadline: TimeInterval?) {

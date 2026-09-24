@@ -11,6 +11,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private(set) var systemController: SystemController?
     /// Desk Mode and its safety net; only a normal launch has one.
     private(set) var deskModeController: DeskModeController?
+    /// Brightness Boost and external brightness; only a normal launch has one.
+    private(set) var boostController: BoostController?
     private var hotKeys: HotKeyCenter?
     private var signalRestorer: SignalRestorer?
     private var notifier: UserNotifier?
@@ -64,8 +66,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     /// The live launch, in safety order: bring back a panel a crashed run left
-    /// off, then read the system, then let Desk Mode act on it, then the keys
-    /// and signals that end it. Returns whether a panel was restored.
+    /// off, then read the system, then let Desk Mode and Boost act on it, then
+    /// the keys and signals that end them. Returns whether a panel was restored.
     private func startLive() -> Bool {
         let markers = FileCrashMarkerStore()
         let skyLight = SkyLightDisplaySwitch()
@@ -88,11 +90,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             )
         )
         blackout.onCoverLost = { [weak deskMode] in deskMode?.coverLost() }
+        let boost = BoostController(
+            model: model,
+            services: BoostController.Services(
+                overlay: EDRBoostOverlay(),
+                writer: DisplayServicesBrightnessWriter(),
+                externals: ExternalBrightnessController(),
+                keys: BrightnessKeyTap(),
+                notifier: notifier,
+                signals: BoostSignalMonitor()
+            )
+        )
         system.deskMode = deskMode
+        system.boost = boost
+        deskMode.boost = boost
         deskMode.start()
+        boost.start()
         system.start()
         systemController = system
         deskModeController = deskMode
+        boostController = boost
         if case let .unconfirmed(displayID, uuid, method) = recovery {
             // With the displays read, the machine retries until the panel is back.
             deskMode.resumeRestore(displayID: displayID, uuid: uuid, method: method)
@@ -100,10 +117,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let hotKeys = HotKeyCenter()
         deskMode.bindHotKeys(hotKeys)
+        boost.bindHotKeys(hotKeys)
         self.hotKeys = hotKeys
 
         let signals = SignalRestorer()
-        signals.install { [weak self] in self?.deskModeController?.terminate() }
+        signals.install { [weak self] in
+            // Boost first (it only removes windows, at once), so Desk Mode
+            // ending doesn't put the overlay back up on the returning panel.
+            self?.boostController?.terminate()
+            self?.deskModeController?.terminate()
+        }
         signalRestorer = signals
         if case .restored(let notify) = recovery { return notify }
         return false
@@ -155,6 +178,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// Quit from anywhere (the menu, the popover, logout): the panel comes back
     /// before the app goes.
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        // Boost first: see the signal handler in `startLive`.
+        boostController?.terminate()
         deskModeController?.terminate()
         return .terminateNow
     }

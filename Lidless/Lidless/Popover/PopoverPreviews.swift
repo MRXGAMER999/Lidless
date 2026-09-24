@@ -126,6 +126,45 @@ private extension Color {
     .preferredColorScheme(.dark)
 }
 
+// Live Boost and external-brightness states (not designed; built on the
+// Boost board): the callout's one-line stand-ins, heat chips past Fair, and
+// external rows dimmed by a shade or still being probed.
+
+#Preview("Boost engaging") {
+    CanvasBoard(backdrop: .boost) {
+        PopoverRoot(model: SampleData.boostEngaging(), actions: PopoverActions())
+    }
+    .preferredColorScheme(.light)
+}
+
+#Preview("Boost paused, hot") {
+    CanvasBoard(backdrop: .boost) {
+        PopoverRoot(model: SampleData.boostPaused(.hot), actions: PopoverActions())
+    }
+    .preferredColorScheme(.light)
+}
+
+#Preview("Boost paused, Low Power Mode") {
+    CanvasBoard(backdrop: .boost) {
+        PopoverRoot(model: SampleData.boostPaused(.lowPower), actions: PopoverActions())
+    }
+    .preferredColorScheme(.light)
+}
+
+#Preview("Boost unavailable") {
+    CanvasBoard(backdrop: .boost) {
+        PopoverRoot(model: SampleData.boostUnavailable(), actions: PopoverActions())
+    }
+    .preferredColorScheme(.light)
+}
+
+#Preview("Shade and probing rows, critical heat") {
+    CanvasBoard(backdrop: .main) {
+        PopoverRoot(model: SampleData.shadedMonitors(), actions: PopoverActions())
+    }
+    .preferredColorScheme(.light)
+}
+
 /// "Desk setup" with four monitors, on a screen with room for a 520 pt panel
 /// (a 1024×640 display with the Dock at the bottom): the list scrolls.
 #Preview("Short screen @2x") {

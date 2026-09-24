@@ -1,3 +1,4 @@
+import Combine
 import CoreGraphics
 import Foundation
 import LidlessCore
@@ -7,7 +8,8 @@ import os
 /// normal launch only; sample launches, previews, tests and safe mode never do.
 ///
 /// It only reads: nothing here changes a display or its brightness. Desk Mode
-/// gets every reading and event through `deskMode`, which decides and acts.
+/// and Boost get every reading and event through `deskMode` and `boost`, which
+/// decide and act.
 final class SystemController {
     /// Receives the display facts, lid, power, system events and availability
     /// after the stores are updated. Set by the app delegate in a normal launch.
@@ -18,6 +20,22 @@ final class SystemController {
             deskMode?.readDisplays = { [weak self] in
                 guard let self, self.isRunning else { return }
                 self.refreshDisplays()
+            }
+        }
+    }
+
+    /// Receives the same readings and events for Boost's guard rails, and
+    /// filters the echoes of its own brightness writes. Set by the app delegate.
+    weak var boost: BoostController? {
+        didSet {
+            boost?.readBrightness = { [weak self] in
+                guard let self, self.isRunning, let id = self.builtInDisplayID else { return nil }
+                return self.brightness.level(of: id)
+            }
+            boost?.boostedDidChange = { [weak self] boosted in
+                guard let self else { return }
+                self.isFollowingBoost = boosted
+                self.updateBrightnessUpdates()
             }
         }
     }
@@ -36,12 +54,17 @@ final class SystemController {
     private var panel = PanelBrightnessInfo()
     private var isRunning = false
     private var isPopoverShown = false
+    /// Boosted: macOS's level is followed with the popover closed too, so the
+    /// brightness-down key leaves Boost.
+    private var isFollowingBoost = false
+    private var subscriptions: Set<AnyCancellable> = []
     /// A clamshell that reported closed has a built-in panel, even one not seen
     /// yet: after a clamshell launch the panel comes online only after the lid opens.
     private var lidSeenClosed = false
     private var observedBuiltIn: CGDirectDisplayID?
     private var pollTimer: Timer?
-    /// One read when the user hold ends after the popover closed. Tests fire it by hand.
+    /// One read when the user hold ends after the popover closed, or after a
+    /// read below full that the hold kept from leaving Boost. Tests fire it by hand.
     private(set) var catchUpRead: Timer?
     private var loggedSummary: Summary?
     private let log = Logger(subsystem: "io.github.mrxgamer999.Lidless", category: "System")
@@ -91,6 +114,12 @@ final class SystemController {
         refreshBrightness()
         displayChanges.start { [weak self] in self?.refreshDisplays() }
         systemEvents.start { [weak self] event in self?.handle(event) }
+        // @Published sends the new value before it is stored: use the value.
+        model.preferences.$boost
+            .dropFirst()
+            .removeDuplicates()
+            .sink { [weak self] settings in self?.applyBrightnessScale(settings) }
+            .store(in: &subscriptions)
     }
 
     func stop() {
@@ -98,6 +127,7 @@ final class SystemController {
         isRunning = false
         displayChanges.stop()
         systemEvents.stop()
+        subscriptions.removeAll()
         stopBrightnessUpdates()
         cancelCatchUpRead()
     }
@@ -105,12 +135,12 @@ final class SystemController {
     func popoverWillShow() {
         isPopoverShown = true
         cancelCatchUpRead()
-        if isRunning { startBrightnessUpdates() }
+        updateBrightnessUpdates()
     }
 
     func popoverDidClose() {
         isPopoverShown = false
-        stopBrightnessUpdates()
+        updateBrightnessUpdates()
         // A drag the close cut short never reports its release.
         model.brightness.setTracking(false)
         scheduleCatchUpRead()
@@ -122,6 +152,7 @@ final class SystemController {
         // First, so the fresh readings below reach Desk Mode after the event
         // that explains them (a wake before the displays that came back).
         deskMode?.handle(event)
+        boost?.handle(event)
         switch event {
         case .lid, .power, .thermal:
             refreshSystem()
@@ -156,26 +187,49 @@ final class SystemController {
         let new = DisplayInventory(facts: facts, previousBuiltIn: inventory.builtIn, names: names)
         inventory = new
         model.system.update(displays: new)
-        // A reference preset pins the panel's brightness, so it has no Boost range.
-        let canBoost = new.builtIn?.supportsBoost == true && !new.builtInPresetLocksBrightness
-        model.brightness.applyScale(BrightnessScale(panel: panel, canBoost: canBoost))
+        applyBrightnessScale(model.preferences.boost)
+        boost?.displaysDidChange(new)
         // The facts before availability, so a lost display reads as lost
         // rather than as Desk Mode becoming unavailable.
         deskMode?.displaysDidChange(facts: facts, lid: model.system.lid, power: model.system.power)
         updateAvailability()
         // Display IDs can be re-issued; follow the built-in's.
-        if isPopoverShown { startBrightnessUpdates() }
+        if isPopoverShown || isFollowingBoost { startBrightnessUpdates() }
     }
 
     func refreshBrightness() {
         guard let id = builtInDisplayID, let reading = brightness.level(of: id) else { return }
-        model.brightness.applyRead(reading)
+        // Our own write coming back: the slider is already there, and moving
+        // it would fight the drag that caused it.
+        if boost?.isEchoOfOwnWrite(reading.level) == true { return }
+        let store = model.brightness
+        store.applyRead(reading)
+        // Boosted with the popover closed, only the change notification reports
+        // a key press, and only once: a brightness-down key inside the hold
+        // after a user edit (the Boost key, say) would leave the slider boosted
+        // over a dimmed panel. Read again when the hold ends; by then a level
+        // still on its way to full has arrived and keeps Boost.
+        if isFollowingBoost, !isPopoverShown, store.isBoosted,
+           reading.level < 1 - BrightnessStore.fullLevelTolerance {
+            scheduleCatchUpRead()
+        }
+    }
+
+    /// The slider's scale and Boost range: the panel, a reference preset (which
+    /// pins brightness, so no Boost range) and Settings › Brightness.
+    private func applyBrightnessScale(_ settings: BoostSettings) {
+        let canBoost = inventory.builtIn?.supportsBoost == true && !inventory.builtInPresetLocksBrightness
+        model.brightness.applyScale(BrightnessScale(panel: panel, canBoost: canBoost, ceilingSetting: settings.clampedCeiling))
+        if model.brightness.boostAllowed != settings.allowed {
+            model.brightness.boostAllowed = settings.allowed
+        }
     }
 
     private func readSystem() {
         let lid = system.lid()
         if lid == .closed { lidSeenClosed = true }
         model.system.update(lid: lid, power: system.power(), thermal: system.thermal())
+        boost?.systemDidChange(lid: model.system.lid, power: model.system.power, thermal: model.system.thermal)
     }
 
     /// Never read an offline built-in: its ID may already belong to another display.
@@ -200,7 +254,17 @@ final class SystemController {
         logSummaryIfChanged(usable: inputs.usableExternalCount)
     }
 
-    // MARK: Brightness while the popover is open
+    // MARK: Brightness while the popover is open (or boosted)
+
+    /// Observes and polls the built-in's level while the popover is open;
+    /// while boosted it only observes, so a key press that leaves Boost is seen.
+    private func updateBrightnessUpdates() {
+        if isRunning, isPopoverShown || isFollowingBoost {
+            startBrightnessUpdates()
+        } else {
+            stopBrightnessUpdates()
+        }
+    }
 
     private func startBrightnessUpdates() {
         let id = builtInDisplayID
@@ -212,7 +276,10 @@ final class SystemController {
                 observedBuiltIn = id
             }
         }
-        if pollTimer == nil {
+        if !isPopoverShown {
+            pollTimer?.invalidate()
+            pollTimer = nil
+        } else if pollTimer == nil {
             // Insurance: DisplayServices can't report a failed registration.
             // Common modes keep it running while the slider is tracked.
             let timer = Timer(timeInterval: pollInterval, repeats: true) { [weak self] _ in

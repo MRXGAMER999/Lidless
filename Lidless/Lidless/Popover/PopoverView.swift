@@ -24,7 +24,7 @@ struct PopoverView: View {
                     openSettings: actions.openSettings
                 )
                 DeskModeCard(deskMode: model.deskMode)
-                BuiltInDisplayCard(deskMode: model.deskMode, brightness: model.brightness)
+                BuiltInDisplayCard(deskMode: model.deskMode, brightness: model.brightness, boost: model.boostStatus)
                 ExternalDisplaysSection(system: model.system, brightness: model.externalBrightness, fit: $fit)
             }
             // A scrolling list takes all the room the footer leaves.

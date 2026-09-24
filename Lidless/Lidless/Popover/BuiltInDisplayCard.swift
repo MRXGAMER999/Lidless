@@ -6,6 +6,7 @@ import SwiftUI
 struct BuiltInDisplayCard: View {
     @ObservedObject var deskMode: DeskModeStore
     let brightness: BrightnessStore
+    let boost: BoostStatusStore
 
     var body: some View {
         let deskModeOn = deskMode.state.builtInDark
@@ -14,7 +15,7 @@ struct BuiltInDisplayCard: View {
             if deskModeOn {
                 BuiltInOffNote(keys: deskMode.panicKeys)
             } else {
-                BuiltInBrightnessControls(brightness: brightness)
+                BuiltInBrightnessControls(brightness: brightness, boost: boost)
             }
         }
         .glassCard()
@@ -73,6 +74,7 @@ private struct BuiltInTitleRow: View {
 
 private struct BuiltInBrightnessControls: View {
     @ObservedObject var brightness: BrightnessStore
+    @ObservedObject var boost: BoostStatusStore
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -86,10 +88,15 @@ private struct BuiltInBrightnessControls: View {
                 onEditingChanged: { brightness.setTracking($0) }
             )
             if scale.isBoosted(brightness.position) {
-                Callout(
-                    glyph: .flame,
-                    message: Text("**Boost on · ≈ \(nits, format: .number) nits.** Uses more battery and heat. Steps back by itself if your Mac gets hot.", comment: "Boost callout in the popover; the variable is the estimated brightness in nits")
-                )
+                if let caption = BoostCaption(boost.status) {
+                    Callout(glyph: caption.glyph, message: caption.message)
+                } else {
+                    let boostedNits = Self.boostNits(status: boost.status, scale: scale) ?? nits
+                    Callout(
+                        glyph: .flame,
+                        message: Text("**Boost on · ≈ \(boostedNits, format: .number) nits.** Uses more battery and heat. Steps back by itself if your Mac gets hot.", comment: "Boost callout in the popover; the variable is the estimated brightness in nits")
+                    )
+                }
                 HStack(spacing: 8) {
                     Button {
                         withAnimation(reduceMotion ? nil : .easeOut(duration: 0.25)) {
@@ -112,10 +119,70 @@ private struct BuiltInBrightnessControls: View {
         }
     }
 
+    /// What the screen shows while Boost is on: the normal maximum times the
+    /// factor actually on screen, which can be below what the slider asks for
+    /// (headroom or thermal caps). Rounded like `BrightnessScale.displayNits`.
+    /// Nil unless Boost is on; the slider's figure is used then.
+    static func boostNits(status: BoostStatus, scale: BrightnessScale) -> Int? {
+        guard case .on(let factor) = status, factor.isFinite else { return nil }
+        let nits = scale.normalMaxNits * max(factor, 1)
+        return Int((nits / 10).rounded()) * 10
+    }
+
     private func hint(nits: Int, canBoost: Bool) -> Text {
         canBoost
             ? Text("≈ \(nits, format: .number) nits · Drag past the line to boost", comment: "Hint under the built-in brightness slider; the variable is the estimated brightness in nits")
             : Text("≈ \(nits, format: .number) nits", comment: "Hint under the built-in brightness slider when Boost is off; the variable is the estimated brightness in nits")
+    }
+}
+
+/// The one-line callout that stands in for "Boost on · ≈ N nits" while the
+/// slider asks for Boost but the screen isn't boosted: waiting for headroom,
+/// paused by a guard rail, or refused by macOS. Not designed: it reuses the
+/// Boost callout with a single short line. Nil when Boost is on (or off), so
+/// the designed callout shows.
+private struct BoostCaption {
+    let glyph: LidlessGlyph
+    let message: Text
+
+    init?(_ status: BoostStatus) {
+        switch status {
+        case .off, .on:
+            return nil
+        case .engaging:
+            glyph = .flame
+            message = Text("Boosting…", comment: "Popover Boost callout while Lidless waits for macOS to let the built-in screen go brighter (usually under a second)")
+        case .unavailable:
+            glyph = .info
+            message = Text("macOS isn't allowing Boost right now.", comment: "Popover Boost callout when macOS gave the screen no extra brightness after several tries; Boost tries again the next time the slider moves into Boost")
+        case .blocked(let block):
+            let paused = Self.paused(block)
+            glyph = paused.glyph
+            message = paused.message
+        }
+    }
+
+    private static func paused(_ block: BoostBlock) -> (glyph: LidlessGlyph, message: Text) {
+        switch block {
+        case .hot:
+            (.thermometer, Text("Paused: your Mac is hot.", comment: "Popover Boost callout: Boost stepped back because the Mac reached the heat level set in Settings; it comes back by itself when the Mac cools down"))
+        case .lowBattery:
+            (.battery, Text("Paused: battery is low.", comment: "Popover Boost callout: Boost stepped back because the battery fell below the level set in Settings; it comes back by itself when charging"))
+        case .lowPower:
+            (.battery, Text("Paused: Low Power Mode is on.", comment: "Popover Boost callout: Boost is paused while macOS Low Power Mode is on. “Low Power Mode” is the macOS feature name; use Apple’s translation."))
+        case .builtInUnavailable:
+            (.info, Text("Paused while the built-in screen is off.", comment: "Popover Boost callout: Boost is paused because the lid is closed or the built-in screen is switched off"))
+        case .screenAsleepOrLocked:
+            (.moon, Text("Paused while the screen sleeps.", comment: "Popover Boost callout: Boost is paused while the displays sleep or the screen is locked"))
+        case .reconfiguring:
+            (.info, Text("Paused while displays change.", comment: "Popover Boost callout: Boost is paused for a few seconds while a display is connected, disconnected or rearranged"))
+        case .hdrSuppressed:
+            (.info, Text("Paused: macOS is limiting bright content.", comment: "Popover Boost callout: macOS asked apps to hold back HDR (extra-bright) content for now, so Boost is paused"))
+        case .notAllowed:
+            (.info, Text("Boost is turned off in Settings.", comment: "Popover Boost callout: “Boost allowed” is off in Settings › Brightness"))
+        case .unsupported:
+            (.info, Text("This screen can't boost right now.", comment: "Popover Boost callout: the built-in screen has no extra brightness to give, for example because a fixed reference preset is selected in System Settings › Displays"))
+        }
     }
 }
 
