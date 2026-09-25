@@ -192,6 +192,15 @@ final class FakeHangWatchdog: HangWatchdogControl {
     }
 }
 
+/// Records when the controller brackets a switch, apart from the call log.
+final class FakeModeWatch: DisplayModeWatching {
+    enum Call: Equatable { case willSwitch, didSwitch }
+    private(set) var calls: [Call] = []
+
+    func willSwitch() { calls.append(.willSwitch) }
+    func didSwitch() { calls.append(.didSwitch) }
+}
+
 /// A Desk Mode controller wired to fakes and a fake clock, with preferences
 /// in a private UserDefaults suite. Call `cleanUp()` when a test changed them.
 @MainActor
@@ -205,6 +214,7 @@ struct DeskModeRig {
     let watchdog: FakeWatchdogLink
     let marker: FakeCrashMarkerStore
     let hang: FakeHangWatchdog
+    let modeWatch = FakeModeWatch()
     let suiteName = "DeskModeRig.\(UUID().uuidString)"
     let model: AppModel
     let controller: DeskModeController
@@ -232,7 +242,8 @@ struct DeskModeRig {
                 marker: marker,
                 notifier: FakeNotifier(log: log),
                 activity: FakeActivity(log: log),
-                hang: hang
+                hang: hang,
+                modeWatch: modeWatch
             ),
             names: DisplayFixtures.names,
             clock: { clock.now },

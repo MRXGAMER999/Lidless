@@ -69,6 +69,21 @@ protocol ActivityHolder: AnyObject {
     func hold(_ on: Bool)
 }
 
+/// Notices another display switching mode while the built-in turns off or
+/// on. Diagnostic only: it reads modes and never changes a display.
+protocol DisplayModeWatching: AnyObject {
+    /// Before a disable or enable is sent: remembers every online display's mode.
+    func willSwitch()
+    /// After the switch was verified: compares once macOS has settled.
+    func didSwitch()
+}
+
+/// Watches nothing. The default, so test rigs don't need one.
+final class NoDisplayModeWatch: DisplayModeWatching {
+    func willSwitch() {}
+    func didSwitch() {}
+}
+
 /// The in-process hang watchdog's switch.
 protocol HangWatchdogControl: AnyObject {
     /// Armed while Desk Mode is on or switching: a main thread stuck for

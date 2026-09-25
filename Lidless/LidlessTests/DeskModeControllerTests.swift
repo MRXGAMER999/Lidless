@@ -439,6 +439,31 @@ struct DeskModeControllerTests {
         #expect(rig.log.calls.filter { if case .hang = $0 { true } else { false } } == [.hang(true), .hang(false)])
     }
 
+    // MARK: Other displays' modes
+
+    @Test func `the mode watch brackets every verified switch`() {
+        let rig = DeskModeRig()
+        rig.connect()
+        rig.controller.setOn(true)
+        #expect(rig.modeWatch.calls == [.willSwitch])
+        rig.builtIn.finishDisable(true)
+        #expect(rig.modeWatch.calls == [.willSwitch, .didSwitch])
+
+        rig.controller.setOn(false)
+        #expect(rig.modeWatch.calls == [.willSwitch, .didSwitch, .willSwitch])
+        rig.builtIn.finishEnable(true)
+        #expect(rig.modeWatch.calls == [.willSwitch, .didSwitch, .willSwitch, .didSwitch])
+    }
+
+    @Test func `a failed disable is never compared`() {
+        let rig = DeskModeRig()
+        rig.connect()
+        rig.controller.setOn(true)
+        rig.builtIn.finishDisable(false)
+        #expect(rig.modeWatch.calls.first == .willSwitch)
+        #expect(!rig.modeWatch.calls.contains(.didSwitch))
+    }
+
     // MARK: The plug-in rule
 
     @Test func `plugging in a display turns Desk Mode on after the rule's delay`() {

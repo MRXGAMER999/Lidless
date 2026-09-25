@@ -50,6 +50,24 @@ final class UserNotifier: NSObject, DeskModeNotifier, UNUserNotificationCenterDe
         ))
     }
 
+    /// Once ever: turning the built-in off or on made macOS switch another
+    /// display's mode, so that monitor went dark for a moment while it resynced.
+    func otherDisplaySwitchedMode() {
+        guard !UserDefaults.standard.bool(forKey: Self.modeSwitchTipKey) else { return }
+        post(Note(
+            id: "desk-mode.mode-switch",
+            thread: "desk-mode",
+            title: String(localized: "Notification.ModeSwitch.Title", defaultValue: "Why your other screen blinked", comment: "Notification title, shown once: when Desk Mode turned the MacBook's own screen off or on, the external monitor went dark for a moment."),
+            body: String(localized: "Notification.ModeSwitch.Body", defaultValue: "macOS gives that screen different settings when the built-in screen is off, so it resyncs. Give it the same resolution in both setups to stop the blink.", comment: "Notification body, shown once. macOS remembers separate display settings for \"external screen alone\" and \"MacBook + external screen\"; when they differ, switching makes the external monitor resync (go dark briefly). \"Built-in screen\" is the MacBook's own display."),
+            sound: false
+        )) {
+            // Only once it was really posted: notifications may be off for now.
+            UserDefaults.standard.set(true, forKey: Self.modeSwitchTipKey)
+        }
+    }
+
+    private static let modeSwitchTipKey = "deskMode.modeSwitchTipShown"
+
     // MARK: - Brightness Boost
 
     /// Boost stepped back by itself. `hot`: the Mac got too hot; otherwise the
@@ -86,7 +104,8 @@ final class UserNotifier: NSObject, DeskModeNotifier, UNUserNotificationCenterDe
         var sound: Bool
     }
 
-    private func post(_ note: Note) {
+    /// `onPosted` runs after the notification center accepted the note.
+    private func post(_ note: Note, onPosted: (() -> Void)? = nil) {
         guard let center else { return }
         Task {
             guard await isAllowed(center) else {
@@ -95,6 +114,7 @@ final class UserNotifier: NSObject, DeskModeNotifier, UNUserNotificationCenterDe
             }
             do {
                 try await center.add(Self.request(for: note))
+                onPosted?()
             } catch {
                 Self.log.error("Couldn't post \(note.id, privacy: .public): \(error.localizedDescription, privacy: .public)")
             }

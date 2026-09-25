@@ -29,6 +29,7 @@ final class DeskModeController {
         var notifier: any DeskModeNotifier
         var activity: any ActivityHolder
         var hang: any HangWatchdogControl
+        var modeWatch: any DisplayModeWatching = NoDisplayModeWatch()
     }
 
     /// Snapshots this soon after a wake re-baseline the plug-in rule: displays
@@ -505,7 +506,9 @@ final class DeskModeController {
             target = (displayID, uuid, method)
             (services.builtIn as? DeskModeMethodSelecting)?.method = method
             log.info("Turning the built-in screen off (\(method.rawValue, privacy: .public))")
+            services.modeWatch.willSwitch()
             services.builtIn.disable(displayID: displayID, uuid: uuid) { [weak self] ok in
+                if ok { self?.services.modeWatch.didSwitch() }
                 self?.send(.disableFinished(succeeded: ok))
             }
         case let .enable(displayID, uuid, method):
@@ -522,7 +525,9 @@ final class DeskModeController {
                 }
             } else {
                 log.info("Turning the built-in screen on")
+                services.modeWatch.willSwitch()
                 services.builtIn.enable(displayID: displayID, uuid: uuid) { [weak self] ok in
+                    if ok { self?.services.modeWatch.didSwitch() }
                     self?.send(.enableFinished(succeeded: ok))
                 }
             }

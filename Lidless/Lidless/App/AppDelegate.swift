@@ -117,6 +117,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let blackout = BlackoutSwitch()
         let notifier = UserNotifier()
         self.notifier = notifier
+        let modeWatch = DisplayModeWatch()
+        modeWatch.onModeSwitch = { [weak notifier] in notifier?.otherDisplaySwitchedMode() }
         let recovery = recoverFromCrash(markers: markers, disconnect: skyLight, blackout: blackout)
 
         let system = SystemController.live(model: model)
@@ -129,7 +131,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 marker: markers,
                 notifier: notifier,
                 activity: ProcessActivityHolder(),
-                hang: HangWatchdog()
+                hang: HangWatchdog(),
+                modeWatch: modeWatch
             )
         )
         blackout.onCoverLost = { [weak deskMode] in deskMode?.coverLost() }
