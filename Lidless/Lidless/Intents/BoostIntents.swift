@@ -79,8 +79,6 @@ extension BoostIntentOutcome {
             IntentDialog(LocalizedStringResource("Brightness Boost is on, but paused while the screen sleeps.", comment: "Shortcuts/Siri reply: Boost is set but paused while the displays sleep or the screen is locked"))
         case .paused(.reconfiguring):
             IntentDialog(LocalizedStringResource("Brightness Boost is on, but paused while displays change.", comment: "Shortcuts/Siri reply: Boost is set but paused for a few seconds while a display is connected, disconnected or rearranged"))
-        case .paused(.hdrSuppressed):
-            IntentDialog(LocalizedStringResource("Brightness Boost is on, but paused while macOS limits bright content.", comment: "Shortcuts/Siri reply: Boost is set but paused because macOS asked apps to hold back HDR (extra-bright) content for now"))
         case .notAllowed, .paused(.notAllowed):
             throw LidlessIntentError.boostNotAllowed
         case .unsupported, .paused(.unsupported):

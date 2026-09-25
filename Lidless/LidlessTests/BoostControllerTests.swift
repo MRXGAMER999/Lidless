@@ -460,14 +460,25 @@ struct BoostControllerTests {
         #expect(rig.log.take() == [])
     }
 
-    @Test func `Low Power Mode and HDR suppression pause Boost`() {
+    @Test func `Low Power Mode pauses Boost`() {
         let rig = BoostRig()
         rig.boost(to: 130)
         rig.signals.send(.lowPowerMode(true))
         #expect(rig.model.boostStatus.status == .blocked(.lowPower))
-        rig.signals.send(.lowPowerMode(false))
+    }
+
+    /// macOS asks a background menu bar app to hold back HDR nearly all the
+    /// time; the request is advisory and Boost must keep running through it.
+    @Test func `HDR suppression is ignored`() {
+        let rig = BoostRig()
+        rig.boost(to: 130)
+        let boosted = rig.model.boostStatus.status
+        #expect(boosted == .on(factor: rig.model.brightness.effectiveScale.boostFactor(130)))
         rig.signals.send(.hdrSuppressed(true))
-        #expect(rig.model.boostStatus.status == .blocked(.hdrSuppressed))
+        #expect(rig.model.boostStatus.status == boosted)
+        #expect(rig.log.take() == [])
+        rig.signals.send(.hdrSuppressed(false))
+        #expect(rig.model.boostStatus.status == boosted)
     }
 
     @Test func `the lid closing suspends Boost`() {

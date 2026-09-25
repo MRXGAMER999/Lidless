@@ -17,8 +17,6 @@ public enum BoostBlock: Sendable, Equatable {
     case screenAsleepOrLocked
     /// A display reconfiguration is in progress (and for `settleTime` after it).
     case reconfiguring
-    /// macOS asks apps to suppress HDR (`applicationShouldSuppressHighDynamicRangeContent`).
-    case hdrSuppressed
 
     // Permanent until the setting or panel changes:
     /// "Boost allowed" is off.
@@ -42,11 +40,10 @@ public struct BoostConditions: Sendable, Equatable {
     public var screenLocked: Bool
     public var sessionActive: Bool
     public var reconfiguring: Bool
-    public var hdrSuppressed: Bool
     /// The built-in reports XDR headroom (`DisplayDescriptor.supportsBoost`) and no reference preset.
     public var panelSupportsBoost: Bool
 
-    public init(thermal: ThermalLevel = .nominal, power: PowerSource = .adapter, lowPowerMode: Bool = false, lid: LidState = .open, builtInOnline: Bool = true, deskModeEngaged: Bool = false, screensAsleep: Bool = false, screenLocked: Bool = false, sessionActive: Bool = true, reconfiguring: Bool = false, hdrSuppressed: Bool = false, panelSupportsBoost: Bool = true) {
+    public init(thermal: ThermalLevel = .nominal, power: PowerSource = .adapter, lowPowerMode: Bool = false, lid: LidState = .open, builtInOnline: Bool = true, deskModeEngaged: Bool = false, screensAsleep: Bool = false, screenLocked: Bool = false, sessionActive: Bool = true, reconfiguring: Bool = false, panelSupportsBoost: Bool = true) {
         self.thermal = thermal
         self.power = power
         self.lowPowerMode = lowPowerMode
@@ -57,7 +54,6 @@ public struct BoostConditions: Sendable, Equatable {
         self.screenLocked = screenLocked
         self.sessionActive = sessionActive
         self.reconfiguring = reconfiguring
-        self.hdrSuppressed = hdrSuppressed
         self.panelSupportsBoost = panelSupportsBoost
     }
 }
@@ -65,7 +61,11 @@ public struct BoostConditions: Sendable, Equatable {
 public enum BoostGuard {
     /// The most important block, or nil. Order: notAllowed, unsupported,
     /// builtInUnavailable, screenAsleepOrLocked, reconfiguring, hot, lowBattery,
-    /// lowPower, hdrSuppressed.
+    /// lowPower.
+    ///
+    /// macOS's HDR suppression request is deliberately not a block: it is
+    /// advisory, meant for HDR photos and video, and is on whenever a menu bar
+    /// app is in the background, which is nearly always.
     public static func block(_ conditions: BoostConditions, settings: BoostSettings) -> BoostBlock? {
         if !settings.allowed { return .notAllowed }
         if !conditions.panelSupportsBoost { return .unsupported }
@@ -74,7 +74,6 @@ public enum BoostGuard {
         if conditions.reconfiguring { return .reconfiguring }
         if let pause = pause(conditions, settings: settings) { return pause }
         if conditions.lowPowerMode { return .lowPower }
-        if conditions.hdrSuppressed { return .hdrSuppressed }
         return nil
     }
 

@@ -30,6 +30,7 @@ enum BoostSignal: Sendable, Equatable {
     /// Low Power Mode turned on or off.
     case lowPowerMode(Bool)
     /// macOS asks apps to stop (or may start again) showing HDR (macOS 26+).
+    /// Logged only: it never blocks Boost (see `BoostGuard.block`).
     case hdrSuppressed(Bool)
     /// A CoreGraphics reconfiguration pass began (`beginConfigurationFlag`).
     case reconfigurationBegan
@@ -55,8 +56,8 @@ protocol BoostSignalSource: AnyObject {
 ///   Boost factor goes to `BoostMachine`, whose commands drive the overlay.
 /// - Guard rails reach the machine as `BoostConditions`: readings from
 ///   `SystemController`, Desk Mode through `DeskModeBoostInterlock`, lock,
-///   Low Power Mode, HDR suppression and reconfiguration through
-///   `BoostSignalSource`. Blocks hide the overlay at once (a fade already
+///   Low Power Mode and reconfiguration through `BoostSignalSource`
+///   (which also reports HDR suppression, logged only). Blocks hide the overlay at once (a fade already
 ///   under way included); the panic key tears it down and leaves Boost.
 /// - External sliders go to `ExternalBrightnessControl`, which is paused while
 ///   displays reconfigure, Desk Mode switches or the Mac sleeps.
@@ -205,7 +206,7 @@ final class BoostController: DeskModeBoostInterlock {
         let signals = services.signals
         conditions.screenLocked = signals.isScreenLocked
         conditions.lowPowerMode = signals.isLowPowerModeEnabled
-        conditions.hdrSuppressed = signals.isHDRSuppressed
+        log.info("macOS HDR suppression at start: \(signals.isHDRSuppressed, privacy: .public) (ignored)")
         signals.start { [weak self] signal in self?.handle(signal) }
 
         // @Published sends the new value before it is stored: use the value.
@@ -601,7 +602,8 @@ final class BoostController: DeskModeBoostInterlock {
         case .lowPowerMode(let on):
             conditions.lowPowerMode = on
         case .hdrSuppressed(let on):
-            conditions.hdrSuppressed = on
+            log.info("macOS HDR suppression \(on ? "began" : "ended", privacy: .public) (ignored)")
+            return
         case .reconfigurationBegan:
             // Every display reports a begin; each pushes the limit out.
             reconfigurationInProgress = true

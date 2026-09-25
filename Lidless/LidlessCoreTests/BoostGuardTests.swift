@@ -46,7 +46,6 @@ struct BoostGuardTests {
     @Test func `the single conditions map to their blocks`() {
         #expect(Self.block(BoostConditions(reconfiguring: true)) == .reconfiguring)
         #expect(Self.block(BoostConditions(lowPowerMode: true)) == .lowPower)
-        #expect(Self.block(BoostConditions(hdrSuppressed: true)) == .hdrSuppressed)
     }
 
     @Test(arguments: [
@@ -82,7 +81,7 @@ struct BoostGuardTests {
         var c = BoostConditions(
             thermal: .critical, power: .battery(percent: 5), lowPowerMode: true, lid: .closed,
             builtInOnline: false, deskModeEngaged: true, screensAsleep: true, screenLocked: true,
-            sessionActive: false, reconfiguring: true, hdrSuppressed: true, panelSupportsBoost: false
+            sessionActive: false, reconfiguring: true, panelSupportsBoost: false
         )
         #expect(Self.block(c, settings) == .notAllowed)
         settings.allowed = true
@@ -104,13 +103,11 @@ struct BoostGuardTests {
         c.power = .adapter
         #expect(Self.block(c, settings) == .lowPower)
         c.lowPowerMode = false
-        #expect(Self.block(c, settings) == .hdrSuppressed)
-        c.hdrSuppressed = false
         #expect(Self.block(c, settings) == nil)
     }
 
     @Test func `only hot and low battery notify`() {
-        let all: [BoostBlock] = [.hot, .lowBattery, .lowPower, .builtInUnavailable, .screenAsleepOrLocked, .reconfiguring, .hdrSuppressed, .notAllowed, .unsupported]
+        let all: [BoostBlock] = [.hot, .lowBattery, .lowPower, .builtInUnavailable, .screenAsleepOrLocked, .reconfiguring, .notAllowed, .unsupported]
         #expect(all.filter(\.notifies) == [.hot, .lowBattery])
     }
 

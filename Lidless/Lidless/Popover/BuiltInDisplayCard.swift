@@ -176,8 +176,6 @@ private struct BoostCaption {
             (.moon, Text("Paused while the screen sleeps.", comment: "Popover Boost callout: Boost is paused while the displays sleep or the screen is locked"))
         case .reconfiguring:
             (.info, Text("Paused while displays change.", comment: "Popover Boost callout: Boost is paused for a few seconds while a display is connected, disconnected or rearranged"))
-        case .hdrSuppressed:
-            (.info, Text("Paused: macOS is limiting bright content.", comment: "Popover Boost callout: macOS asked apps to hold back HDR (extra-bright) content for now, so Boost is paused"))
         case .notAllowed:
             (.info, Text("Boost is turned off in Settings.", comment: "Popover Boost callout: “Boost allowed” is off in Settings › Brightness"))
         case .unsupported:

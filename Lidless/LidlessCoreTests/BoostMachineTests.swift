@@ -516,7 +516,6 @@ struct BoostMachineTests {
 
     @Test(arguments: [
         (BoostConditions(lowPowerMode: true), BoostBlock.lowPower),
-        (BoostConditions(hdrSuppressed: true), .hdrSuppressed),
         (BoostConditions(reconfiguring: true), .reconfiguring),
         (BoostConditions(deskModeEngaged: true), .builtInUnavailable),
         (BoostConditions(screensAsleep: true), .screenAsleepOrLocked),
