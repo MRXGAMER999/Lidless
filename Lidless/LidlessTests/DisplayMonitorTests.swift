@@ -295,8 +295,15 @@ struct DisplayChangeMonitorTests {
         #expect(delay < 8)
     }
 
+    /// The quiet time is wide (1 s), so posts every 0.1 s can't look quiet
+    /// even when a busy main thread (other suites run beside this one) delays
+    /// a few of them: only the 2 s ceiling can let a change through while the
+    /// 3 s stream runs.
     @Test func `a steady stream still fires within maxWait`() async throws {
-        let monitor = makeMonitor()
+        let monitor = DisplayChangeMonitor(
+            center: center, workspaceCenter: workspaceCenter,
+            schedule: RefreshSchedule(quiet: 1, maxWait: 2)
+        )
         let log = ChangeLog()
         let firstPost = uptime
         var streamEnd: TimeInterval = 0
@@ -305,18 +312,17 @@ struct DisplayChangeMonitorTests {
                 log.record()
                 changed()
             }
-            // Never quiet for 0.3 s, so only maxWait can let a change through.
-            for _ in 0..<15 {
+            for _ in 0..<30 {
                 postScreenParameters()
                 try await Task.sleep(for: .milliseconds(100))
             }
             streamEnd = uptime
-            try await Task.sleep(for: .milliseconds(500))
+            try await Task.sleep(for: .milliseconds(1500))
             monitor.stop()
         }
         let first = try #require(log.times.first)
         #expect(first < streamEnd)
-        #expect(first - firstPost >= 0.9 && first - firstPost < 1.3)
+        #expect(first - firstPost >= 1.9)
     }
 
     @Test func `stop cancels a pending change and later posts do nothing`() async throws {

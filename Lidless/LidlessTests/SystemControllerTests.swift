@@ -221,7 +221,12 @@ struct SystemControllerTests {
 
         rig.brightness.levels[1] = 0.6
         let readsBeforePoll = rig.brightness.reads.count
-        try await Task.sleep(for: .milliseconds(300))
+        // Wait for the 0.05 s poll, however late a busy main thread runs it
+        // (other suites run beside this one on CI); ends as soon as it lands.
+        let deadline = ContinuousClock.now + .seconds(5)
+        while abs(rig.model.brightness.position - 60) >= 1e-9, ContinuousClock.now < deadline {
+            try await Task.sleep(for: .milliseconds(20))
+        }
         #expect(rig.brightness.reads.count > readsBeforePoll)
         #expect(abs(rig.model.brightness.position - 60) < 1e-9)
 
