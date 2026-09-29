@@ -560,8 +560,44 @@ struct DeskModeControllerTests {
         #expect(!configuration.askBeforeKeeping)
         #expect(configuration.keepAfterWake)
         #if DEBUG
-        #expect(configuration.maxDuration == 300)
+        // Off unless the launch argument or defaults key asks for one.
+        #expect(configuration.maxDuration == DeskModeController.debugTimeLimit())
+        #else
+        #expect(configuration.maxDuration == nil)
         #endif
+    }
+
+    /// Debug runs from Xcode used to end Desk Mode after 5 minutes by
+    /// themselves; the limit is opt-in now.
+    @Test func `the debug time limit is off unless asked for`() throws {
+        let suite = "DeskModeControllerTests.timeLimit.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        #expect(DeskModeController.debugTimeLimit(defaults) == nil)
+        defaults.set(300, forKey: DeskModeController.debugTimeLimitKey)
+        #expect(DeskModeController.debugTimeLimit(defaults) == 300)
+        defaults.set(0, forKey: DeskModeController.debugTimeLimitKey)
+        #expect(DeskModeController.debugTimeLimit(defaults) == nil)
+        defaults.set(-5, forKey: DeskModeController.debugTimeLimitKey)
+        #expect(DeskModeController.debugTimeLimit(defaults) == nil)
+        defaults.set("soon", forKey: DeskModeController.debugTimeLimitKey)
+        #expect(DeskModeController.debugTimeLimit(defaults) == nil)
+    }
+
+    @Test func `a kept Desk Mode outlives the old debug limit`() {
+        let rig = DeskModeRig()
+        defer { rig.cleanUp() }
+        guard rig.controller.machine.configuration.maxDuration == nil else { return } // a developer opted in
+        rig.turnOnAndKeep()
+        rig.advance(3)
+        _ = rig.log.take()
+        for _ in 0..<20 {
+            rig.advance(60)
+            rig.connect(DeskModeRig.builtInOff)
+            rig.controller.tick()
+        }
+        #expect(rig.log.take().filter(\.touchesDisplay).isEmpty)
+        #expect(rig.model.deskMode.state.isOn)
     }
 
     @Test func `a new panic shortcut reaches the popover`() {

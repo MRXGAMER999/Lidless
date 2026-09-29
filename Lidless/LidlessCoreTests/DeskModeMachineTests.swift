@@ -374,9 +374,68 @@ struct DeskModeMachineTests {
         #expect(rig.send(.snapshot(Desk.panelOff)).isEmpty)
         rig.send(.snapshot(Desk.reading([], screensAsleep: true)))
         rig.now += 5
-        // The asleep reading doesn't start the loss clock; the first awake one does.
+        // The asleep reading doesn't start the loss clock; the first awake one
+        // does, and the external gets the screen-wake grace to come back.
+        #expect(rig.send(.snapshot(Desk.unplugged)).isEmpty)
+        #expect(rig.tick(after: 1).isEmpty)
+        #expect(rig.tick(after: 4).isEmpty)
+        #expect(rig.tick(after: 1) == Rig.restore)
+        #expect(rig.restoreReason == .externalLost(displayName: "LG ULTRAGEAR"))
+    }
+
+    /// A monitor leaving standby (the LG on HDMI) can be missing from the list
+    /// for a few seconds while its signal resyncs: that isn't an unplug.
+    @Test func `an external resyncing after display sleep keeps Desk Mode`() {
+        var rig = Rig(Rig.noPrompt)
+        rig.activate()
+        rig.send(.snapshot(Desk.screensAsleep))
+        rig.tick(after: 120)
+        rig.send(.snapshot(Desk.reading([], screensAsleep: true)))
+        rig.tick(after: 60)
+        // Awake, the LG not back yet.
+        #expect(rig.send(.snapshot(Desk.unplugged)).isEmpty)
+        for _ in 0..<5 { #expect(rig.tick(after: 1).isEmpty) }
+        #expect(rig.send(.snapshot(Desk.panelOff)).isEmpty)
+        #expect(rig.tick(after: 60).isEmpty)
+        #expect(rig.isActive)
+    }
+
+    /// The grace belongs to the wake: a later unplug is confirmed in the usual second.
+    @Test func `an unplug well after the screens woke restores in the usual time`() {
+        var rig = Rig(Rig.noPrompt)
+        rig.activate()
+        rig.send(.snapshot(Desk.screensAsleep))
+        rig.tick(after: 30)
+        rig.send(.snapshot(Desk.panelOff))
+        rig.tick(after: 30)
         #expect(rig.send(.snapshot(Desk.unplugged)).isEmpty)
         #expect(rig.tick(after: 1) == Rig.restore)
+    }
+
+    @Test(arguments: [0.0, 10.0])
+    func `the screen-wake grace is configurable`(seconds: TimeInterval) {
+        var rig = Rig(.init(askBeforeKeeping: false, screenWakeGrace: seconds))
+        rig.activate()
+        rig.send(.snapshot(Desk.reading([], screensAsleep: true)))
+        rig.tick(after: 30)
+        #expect(rig.send(.snapshot(Desk.unplugged)).isEmpty)
+        if seconds == 0 {
+            #expect(rig.tick(after: 1) == Rig.restore)
+        } else {
+            #expect(rig.tick(after: 9.5).isEmpty)
+            #expect(rig.tick(after: 0.5) == Rig.restore)
+        }
+    }
+
+    /// The prompt's deadline still wins inside the grace.
+    @Test func `the prompt still times out inside the screen-wake grace`() {
+        var rig = Rig()
+        rig.engage()
+        rig.send(.snapshot(Desk.reading([], screensAsleep: true)))
+        rig.now += 10
+        #expect(rig.send(.snapshot(Desk.unplugged)).isEmpty)
+        #expect(rig.tick(after: 5) == Rig.restoreFromPrompt)
+        #expect(rig.restoreReason == .confirmationTimedOut)
     }
 
     @Test func `a present but inactive external keeps Desk Mode`() {
@@ -430,6 +489,8 @@ struct DeskModeMachineTests {
         rig.now += 60
         rig.send(.didWake)
         #expect(rig.tick(after: 2).isEmpty) // settled: the clock starts now, not before sleep
+        #expect(rig.tick(after: 1).isEmpty) // confirmed, but inside the screen-wake grace
+        #expect(rig.tick(after: 2).isEmpty)
         #expect(rig.tick(after: 1) == Rig.restore)
     }
 
@@ -543,7 +604,8 @@ struct DeskModeMachineTests {
         rig.send(.didWake)
         #expect(rig.send(.snapshot(Desk.unplugged)).isEmpty) // still settling
         #expect(rig.tick(after: 2).isEmpty) // the loss clock starts
-        #expect(rig.tick(after: 1) == Rig.restore)
+        #expect(rig.tick(after: 1).isEmpty) // the screen-wake grace
+        #expect(rig.tick(after: 3) == Rig.restore)
         #expect(rig.restoreReason == .externalLost(displayName: "LG ULTRAGEAR"))
     }
 

@@ -34,13 +34,6 @@
 			remoteGlobalIDString = E23488A730651238009D3F48;
 			remoteInfo = LidlessCore;
 		};
-		E23488B430651238009D3F48 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = E2348873306511D2009D3F48 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = E234887A306511D2009D3F48;
-			remoteInfo = Lidless;
-		};
 		E23488B930651238009D3F48 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = E2348873306511D2009D3F48 /* Project object */;
@@ -266,7 +259,6 @@
 			);
 			dependencies = (
 				E23488B330651238009D3F48 /* PBXTargetDependency */,
-				E23488B530651238009D3F48 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				E23488B630651238009D3F48 /* LidlessCoreTests */,
@@ -303,7 +295,6 @@
 					};
 					E23488AF30651238009D3F48 = {
 						CreatedOnToolsVersion = 27.0;
-						TestTargetID = E234887A306511D2009D3F48;
 					};
 				};
 			};
@@ -401,11 +392,6 @@
 			isa = PBXTargetDependency;
 			target = E23488A730651238009D3F48 /* LidlessCore */;
 			targetProxy = E23488B230651238009D3F48 /* PBXContainerItemProxy */;
-		};
-		E23488B530651238009D3F48 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = E234887A306511D2009D3F48 /* Lidless */;
-			targetProxy = E23488B430651238009D3F48 /* PBXContainerItemProxy */;
 		};
 		E23488BA30651238009D3F48 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -578,6 +564,7 @@
 				ARCHS = arm64;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_INJECT_BASE_ENTITLEMENTS = NO;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -794,7 +781,6 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 6.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Lidless.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Lidless";
 				XROS_DEPLOYMENT_TARGET = 27.0;
 			};
 			name = Debug;
@@ -818,7 +804,6 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 6.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Lidless.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Lidless";
 				XROS_DEPLOYMENT_TARGET = 27.0;
 			};
 			name = Release;

@@ -497,6 +497,7 @@ struct MethodCard<Art: View>: View {
     @ViewBuilder var art: () -> Art
 
     @Environment(\.isEnabled) private var isEnabled
+    @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
 
     var body: some View {
         Button(action: action) {
@@ -517,6 +518,17 @@ struct MethodCard<Art: View>: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             // CSS border-box: 12 pt padding inside the 2 pt border.
             .padding(12 + 2)
+            // The selected card differs only by its gold border and fill; with
+            // Differentiate Without Colour it also gets a check mark. Not designed.
+            .overlay(alignment: .topTrailing) {
+                if differentiateWithoutColor && isSelected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(Palette.goldDeep)
+                        .padding(8)
+                        .accessibilityHidden(true)
+                }
+            }
         }
         .buttonStyle(MethodCardStyle(isSelected: isSelected))
         // Not designed: faded like the other disabled controls.

@@ -181,7 +181,7 @@ private struct GuardRailsCard: View {
     /// Menu and pill titles: `NSMenu` items need strings.
     static func heatName(_ level: ThermalLevel) -> String {
         switch level {
-        case .nominal: String(localized: "Normal", comment: "Heat level option in Settings › Brightness › Guard rails")
+        case .nominal: String(localized: "Heat.Normal", defaultValue: "Normal", comment: "Heat level option in Settings › Brightness › Guard rails (the Mac's normal temperature). A separate key from the slider's “Normal” brightness zone.")
         case .fair: String(localized: "Fair", comment: "Heat level option in Settings › Brightness › Guard rails")
         case .serious: String(localized: "Serious", comment: "Heat level option in Settings › Brightness › Guard rails")
         case .critical: String(localized: "Critical", comment: "Heat level option in Settings › Brightness › Guard rails")

@@ -25,6 +25,8 @@ struct PopoverHeader: View {
                 HeaderStatusLine(system: system, deskMode: deskMode)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+            // "Lidless, Lid open, 3 displays, On power": one stop.
+            .accessibilityElement(children: .combine)
             HeaderSettingsButton(deskMode: deskMode, brightness: brightness, openSettings: openSettings)
         }
         .padding(EdgeInsets(top: 2, leading: 4, bottom: 0, trailing: 2))
@@ -35,6 +37,7 @@ struct PopoverHeader: View {
 private struct HeaderStatusLine: View {
     @ObservedObject var system: SystemStore
     @ObservedObject var deskMode: DeskModeStore
+    @Environment(\.locale) private var locale
 
     var body: some View {
         let segments = StatusLine.segments(
@@ -48,6 +51,8 @@ private struct HeaderStatusLine: View {
             .foregroundStyle(Palette.text3)
             .lineLimit(1)
             .lineBox(.caption)
+            // A list rather than " · ", which VoiceOver may read as "middle dot".
+            .accessibilityLabel(Text(verbatim: StatusSegment.spokenList(segments, locale: locale)))
     }
 }
 
@@ -70,6 +75,11 @@ private struct HeaderSettingsButton: View {
 }
 
 extension StatusSegment {
+    /// The status line as VoiceOver reads it: "Lid open, 3 displays, On power".
+    static func spokenList(_ segments: [StatusSegment], locale: Locale = .current) -> String {
+        segments.map(\.localizedText).formatted(.list(type: .and, width: .narrow).locale(locale))
+    }
+
     var localizedText: String {
         switch self {
         case .lidOpen:

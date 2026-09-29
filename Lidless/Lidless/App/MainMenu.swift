@@ -22,7 +22,7 @@ enum MainMenu {
     private static func appMenu(settingsTarget: AnyObject, settingsAction: Selector) -> NSMenu {
         let menu = NSMenu(title: "Lidless")
         menu.addItem(
-            withTitle: String(localized: "About Lidless", comment: "App menu item"),
+            withTitle: String(localized: "About Lidless", comment: "App menu item that opens the About window (standard macOS menu item; Lidless is the app name)"),
             action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)),
             keyEquivalent: ""
         )
@@ -42,13 +42,13 @@ enum MainMenu {
         settings.target = settingsTarget
         menu.addItem(.separator())
         menu.addItem(
-            withTitle: String(localized: "Hide Lidless", comment: "App menu item"),
+            withTitle: String(localized: "Hide Lidless", comment: "App menu item that hides Lidless's windows (standard macOS menu item; Lidless is the app name)"),
             action: #selector(NSApplication.hide(_:)),
             keyEquivalent: "h"
         )
         menu.addItem(.separator())
         menu.addItem(
-            withTitle: String(localized: "Quit Lidless", comment: "App menu item"),
+            withTitle: String(localized: "Quit Lidless", comment: "App menu item that quits Lidless (standard macOS menu item; Lidless is the app name)"),
             action: #selector(NSApplication.terminate(_:)),
             keyEquivalent: "q"
         )
@@ -56,16 +56,16 @@ enum MainMenu {
     }
 
     private static func editMenu() -> NSMenu {
-        let menu = NSMenu(title: String(localized: "Edit", comment: "Main menu title"))
+        let menu = NSMenu(title: String(localized: "Edit", comment: "Title of the Edit menu in the menu bar (a noun, the standard macOS menu: use the system's usual translation)"))
         // undo:/redo: are responder-chain actions with no Swift-visible declaration.
-        menu.addItem(withTitle: String(localized: "Undo", comment: "Edit menu item"), action: Selector(("undo:")), keyEquivalent: "z")
-        let redo = menu.addItem(withTitle: String(localized: "Redo", comment: "Edit menu item"), action: Selector(("redo:")), keyEquivalent: "z")
+        menu.addItem(withTitle: String(localized: "Undo", comment: "Edit menu item that undoes the last change (a command, the standard macOS menu item: use the system's usual translation)"), action: Selector(("undo:")), keyEquivalent: "z")
+        let redo = menu.addItem(withTitle: String(localized: "Redo", comment: "Edit menu item that redoes the last undone change (a command, the standard macOS menu item: use the system's usual translation)"), action: Selector(("redo:")), keyEquivalent: "z")
         redo.keyEquivalentModifierMask = [.command, .shift]
         menu.addItem(.separator())
-        menu.addItem(withTitle: String(localized: "Cut", comment: "Edit menu item"), action: #selector(NSText.cut(_:)), keyEquivalent: "x")
-        menu.addItem(withTitle: String(localized: "Copy", comment: "Edit menu item"), action: #selector(NSText.copy(_:)), keyEquivalent: "c")
-        menu.addItem(withTitle: String(localized: "Paste", comment: "Edit menu item"), action: #selector(NSText.paste(_:)), keyEquivalent: "v")
-        menu.addItem(withTitle: String(localized: "Select All", comment: "Edit menu item"), action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
+        menu.addItem(withTitle: String(localized: "Cut", comment: "Edit menu item that cuts the selection to the clipboard (a command, the standard macOS menu item: use the system's usual translation)"), action: #selector(NSText.cut(_:)), keyEquivalent: "x")
+        menu.addItem(withTitle: String(localized: "Copy", comment: "Edit menu item that copies the selection to the clipboard (a command, the standard macOS menu item: use the system's usual translation)"), action: #selector(NSText.copy(_:)), keyEquivalent: "c")
+        menu.addItem(withTitle: String(localized: "Paste", comment: "Edit menu item that pastes from the clipboard (a command, the standard macOS menu item: use the system's usual translation)"), action: #selector(NSText.paste(_:)), keyEquivalent: "v")
+        menu.addItem(withTitle: String(localized: "Select All", comment: "Edit menu item that selects everything in the field (a command, the standard macOS menu item: use the system's usual translation)"), action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
         return menu
     }
 
@@ -80,9 +80,9 @@ enum MainMenu {
     #endif
 
     private static func windowMenu() -> NSMenu {
-        let menu = NSMenu(title: String(localized: "Window", comment: "Main menu title"))
-        menu.addItem(withTitle: String(localized: "Minimize", comment: "Window menu item"), action: #selector(NSWindow.performMiniaturize(_:)), keyEquivalent: "m")
-        menu.addItem(withTitle: String(localized: "Close", comment: "Window menu item"), action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
+        let menu = NSMenu(title: String(localized: "Window", comment: "Title of the Window menu in the menu bar (the standard macOS menu: use the system's usual translation)"))
+        menu.addItem(withTitle: String(localized: "Minimize", comment: "Window menu item that minimizes the window to the Dock (a command, the standard macOS menu item: use the system's usual translation)"), action: #selector(NSWindow.performMiniaturize(_:)), keyEquivalent: "m")
+        menu.addItem(withTitle: String(localized: "Close", comment: "Window menu item that closes the window (a command, the standard macOS menu item: use the system's usual translation)"), action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
         return menu
     }
 

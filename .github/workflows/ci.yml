@@ -1,0 +1,124 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "claude/**"]
+  pull_request:
+    branches: [main, "claude/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    # Explicit bash turns on -e and -o pipefail, so `xcodebuild | xcbeautify` fails when xcodebuild does.
+    shell: bash
+
+env:
+  # xcode-27 image: macOS 27.0, Xcode 27.0 (27A266a) at /Applications/Xcode_27.0.app. Pinned so a
+  # newer default Xcode on the image can't change the build under us.
+  DEVELOPER_DIR: /Applications/Xcode_27.0.app/Contents/Developer
+  PROJECT: Lidless/Lidless.xcodeproj
+  DESTINATION: platform=macOS,arch=arm64
+  NSUnbufferedIO: "YES"
+  # Never touch a display on CI. The app skips all display work and shows no UI in safe mode;
+  # TEST_RUNNER_ passes it on to the app that hosts LidlessTests. Lidless.xctestplan sets it too.
+  LIDLESS_SAFE_MODE: "1"
+  TEST_RUNNER_LIDLESS_SAFE_MODE: "1"
+
+jobs:
+  test:
+    name: Build and test (Debug)
+    runs-on: xcode-27
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Toolchain
+        run: |
+          xcodebuild -version
+          sw_vers
+
+      - name: Guard the test plan
+        # LidlessTests is app-hosted; it must run in safe mode and must never pull in the UI tests
+        # (they launch the app with its UI). Hardware tests only read displays and are gated with
+        # .enabled(if:) on a built-in panel or external monitor, which a CI VM doesn't have.
+        run: |
+          python3 - <<'PY'
+          import json, sys
+          plan = json.load(open("Lidless/Lidless.xctestplan"))
+          env = {e["key"]: e["value"] for e in plan.get("defaultOptions", {}).get("environmentVariableEntries", [])}
+          targets = [t["target"]["name"] for t in plan.get("testTargets", [])]
+          problems = []
+          if env.get("LIDLESS_SAFE_MODE") != "1":
+              problems.append("Lidless.xctestplan must set LIDLESS_SAFE_MODE=1")
+          if any("UITests" in name for name in targets):
+              problems.append("Lidless.xctestplan must not include UI tests: %s" % targets)
+          if "LidlessTests" not in targets:
+              problems.append("Lidless.xctestplan no longer includes LidlessTests")
+          for problem in problems:
+              print("::error file=Lidless/Lidless.xctestplan::" + problem)
+          sys.exit(1 if problems else 0)
+          PY
+
+      - name: LidlessCoreTests (hostless)
+        # Shared LidlessCore scheme: the test bundle has no host app, so nothing is launched.
+        run: |
+          xcodebuild test \
+            -project "$PROJECT" -scheme LidlessCore \
+            -destination "$DESTINATION" -derivedDataPath DerivedData \
+            -resultBundlePath TestResults/LidlessCoreTests.xcresult \
+            CODE_SIGN_IDENTITY=- COMPILER_INDEX_STORE_ENABLE=NO \
+            | xcbeautify --renderer github-actions
+
+      - name: Build (Debug)
+        run: |
+          xcodebuild build-for-testing \
+            -project "$PROJECT" -scheme Lidless -testPlan Lidless \
+            -destination "$DESTINATION" -derivedDataPath DerivedData \
+            CODE_SIGN_IDENTITY=- COMPILER_INDEX_STORE_ENABLE=NO \
+            | xcbeautify --renderer github-actions
+
+      - name: LidlessTests (app-hosted, safe mode)
+        run: |
+          xcodebuild test-without-building \
+            -project "$PROJECT" -scheme Lidless -testPlan Lidless \
+            -only-testing:LidlessTests \
+            -destination "$DESTINATION" -derivedDataPath DerivedData \
+            -resultBundlePath TestResults/LidlessTests.xcresult \
+            | xcbeautify --renderer github-actions
+
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: xcresult-${{ github.run_id }}-${{ github.run_attempt }}
+          path: TestResults/*.xcresult
+          if-no-files-found: ignore
+          retention-days: 7
+
+  release-build:
+    name: Release build and binary checks
+    runs-on: xcode-27
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Build, sign ad hoc and package (Release)
+        # Same script as a real release, minus --publish: archive, version and signature checks,
+        # scripts/check-availability.sh, zip, DMG (mounted read-only to verify), SHA256SUMS.
+        env:
+          LIDLESS_DERIVED_DATA: ${{ runner.temp }}/DerivedData
+        run: scripts/release.sh
+
+      - name: Check the Release binary (arm64, macOS 12, weak links)
+        run: scripts/check-availability.sh dist/Lidless.app 12.0

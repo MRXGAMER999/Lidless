@@ -36,7 +36,8 @@ nonisolated enum Palette {
     static let deviceBody = fixed(0x2A3542)
     static let screenOn = fixed(0x3B4A5E)
     static let screenOff = fixed(0x0D1117)
-    static let textOnDark = fixed(0xB8C0CC)
+    /// Stronger with Increase Contrast (as `textOnDark2`).
+    static let textOnDark = contrastAware("textOnDark", srgb(0xB8C0CC), increased: srgb(0xE6E9EE))
     static let textOnDark2 = fixed(0xE6E9EE)
     static let trackNormalOnDark = fixed(0xE8ECF2)
     static let deckLight = fixed(0xE6E7EA)
@@ -48,10 +49,16 @@ nonisolated enum Palette {
     static let textPrimary = adaptive("textPrimary", light: srgb(0x1B2531), dark: srgb(0xF5F5F7))
     /// Chip text, body copy on light surfaces.
     static let text2 = adaptive("text2", light: srgb(0x2B3440), dark: srgb(0xE5E5EA))
-    /// Status line, section label, hints.
-    static let text3 = adaptive("text3", light: srgb(0x3A4452), dark: srgb(0xC8C8D2))
-    /// Helper text, row subtitles, small slider icons.
-    static let text4 = adaptive("text4", light: srgb(0x4A5260), dark: srgb(0xC8C8D2))
+    /// Status line, section label, hints. Darker (lighter in dark) with Increase Contrast.
+    static let text3 = adaptive(
+        "text3", light: srgb(0x3A4452), dark: srgb(0xC8C8D2),
+        highContrastLight: srgb(0x27303C), highContrastDark: srgb(0xE5E5EA)
+    )
+    /// Helper text, row subtitles, small slider icons. Darker (lighter in dark) with Increase Contrast.
+    static let text4 = adaptive(
+        "text4", light: srgb(0x4A5260), dark: srgb(0xC8C8D2),
+        highContrastLight: srgb(0x2B3440), highContrastDark: srgb(0xE5E5EA)
+    )
     /// External display row icons.
     static let rowIcon = adaptive("rowIcon", light: srgb(0x1B2531), dark: srgb(0xE5E5EA))
     /// The built-in readout when it says "Off" (ink in Main.dc.html, grey in DeskDark).
@@ -59,13 +66,20 @@ nonisolated enum Palette {
 
     // MARK: Translucent neutrals
 
-    static let track = adaptive("track", light: srgb(0x1B2531, 0.12), dark: srgb(0xFFFFFF, 0.16))
+    static let track = adaptive(
+        "track", light: srgb(0x1B2531, 0.12), dark: srgb(0xFFFFFF, 0.16),
+        highContrastLight: srgb(0x1B2531, 0.3), highContrastDark: srgb(0xFFFFFF, 0.35)
+    )
     /// Normal part of the built-in slider. Derived for dark: gold there would hide the Boost split.
     static let sliderFill = adaptive("sliderFill", light: srgb(0x1B2531), dark: srgb(0xE6E9EE))
     /// External display mini sliders (gold in DeskDark).
     static let miniSliderFill = adaptive("miniSliderFill", light: srgb(0x1B2531), dark: srgb(0xFFBF00))
-    static let boostMarker = adaptive("boostMarker", light: srgb(0x1B2531, 0.45), dark: srgb(0xFFFFFF, 0.5))
-    static let thumbRing = fixed(0x1B2531, 0.15)
+    static let boostMarker = adaptive(
+        "boostMarker", light: srgb(0x1B2531, 0.45), dark: srgb(0xFFFFFF, 0.5),
+        highContrastLight: srgb(0x1B2531, 0.8), highContrastDark: srgb(0xFFFFFF, 0.85)
+    )
+    /// The built-in slider's thumb ring (on a white thumb in both appearances).
+    static let thumbRing = contrastAware("thumbRing", srgb(0x1B2531, 0.15), increased: srgb(0x1B2531, 0.55))
     static let fill7 = fixed(0x1B2531, 0.07)
     /// Empty-state and "Not set" dashed borders, inactive page dots. Stronger with Increase Contrast.
     static let dashedBorder = adaptive(
@@ -86,8 +100,17 @@ nonisolated enum Palette {
     /// Wash over the material and Liquid Glass on macOS 26+, lighter than the
     /// design's 0.58 / 0.64 because both layers already tint.
     static let popoverGlassWash = adaptive("popoverGlassWash", light: srgb(0xFFFFFF, 0.06), dark: srgb(0x1C1C24, 0.47))
-    static let popoverBorder = adaptive("popoverBorder", light: srgb(0xFFFFFF, 0.8), dark: srgb(0xFFFFFF, 0.2))
-    static let popoverRing = adaptive("popoverRing", light: srgb(0x000000, 0.14), dark: srgb(0x000000, 0.6))
+    static let popoverBorder = adaptive(
+        "popoverBorder", light: srgb(0xFFFFFF, 0.8), dark: srgb(0xFFFFFF, 0.2),
+        highContrastDark: srgb(0xFFFFFF, 0.5)
+    )
+    static let popoverRing = adaptive(
+        "popoverRing", light: srgb(0x000000, 0.14), dark: srgb(0x000000, 0.6),
+        highContrastLight: srgb(0x000000, 0.5), highContrastDark: srgb(0x000000, 0.8)
+    )
+    /// Opaque panel fill with Reduce Transparency, in place of the material and
+    /// its wash. Derived: roughly the washed material over a neutral backdrop.
+    static let popoverSolid = adaptive("popoverSolid", light: srgb(0xF6F5F2), dark: srgb(0x222229))
     static let popoverInsetTop = adaptive("popoverInsetTop", light: srgb(0xFFFFFF), dark: srgb(0xFFFFFF, 0.4))
     static let popoverInsetBottom = adaptive("popoverInsetBottom", light: srgb(0xFFFFFF, 0.4), dark: srgb(0xFFFFFF, 0.06))
     static let popoverShadowFar = adaptive("popoverShadowFar", light: srgb(0x3C280A, 0.25), dark: srgb(0x000000, 0.5))
@@ -96,11 +119,17 @@ nonisolated enum Palette {
     // MARK: Surfaces inside the popover
 
     static let glassCardFill = adaptive("glassCardFill", light: srgb(0xFFFFFF, 0.6), dark: srgb(0xFFFFFF, 0.08))
-    static let glassCardBorder = adaptive("glassCardBorder", light: srgb(0xFFFFFF, 0.8), dark: srgb(0xFFFFFF, 0.1))
+    static let glassCardBorder = adaptive(
+        "glassCardBorder", light: srgb(0xFFFFFF, 0.8), dark: srgb(0xFFFFFF, 0.1),
+        highContrastLight: srgb(0x1B2531, 0.3), highContrastDark: srgb(0xFFFFFF, 0.4)
+    )
     static let glassCardInset = adaptive("glassCardInset", light: srgb(0xFFFFFF), dark: srgb(0xFFFFFF, 0.12))
 
     static let circleButtonFill = adaptive("circleButtonFill", light: srgb(0xFFFFFF, 0.6), dark: srgb(0xFFFFFF, 0.12))
-    static let circleButtonBorder = adaptive("circleButtonBorder", light: srgb(0xFFFFFF, 0.8), dark: srgb(0xFFFFFF, 0.16))
+    static let circleButtonBorder = adaptive(
+        "circleButtonBorder", light: srgb(0xFFFFFF, 0.8), dark: srgb(0xFFFFFF, 0.16),
+        highContrastLight: srgb(0x1B2531, 0.35), highContrastDark: srgb(0xFFFFFF, 0.45)
+    )
     static let circleButtonInset = adaptive("circleButtonInset", light: srgb(0xFFFFFF), dark: srgb(0xFFFFFF, 0.2))
     /// `0 1px 3px` under white buttons and capsules; none in dark.
     static let buttonShadow = adaptive("buttonShadow", light: srgb(0x000000, 0.08), dark: .clear)
@@ -110,15 +139,24 @@ nonisolated enum Palette {
     static let deskCardInset = adaptive("deskCardInset", light: srgb(0xFFFFFF, 0.08), dark: srgb(0xFFFFFF, 0.06))
     static let deskCardShadow = adaptive("deskCardShadow", light: srgb(0x141B24, 0.25), dark: .clear)
     static let deskCardGlow = adaptive("deskCardGlow", light: .clear, dark: srgb(0xFFBF00, 0.12))
-    static let onDarkHairline = fixed(0xFFFFFF, 0.08)
+    static let onDarkHairline = contrastAware("onDarkHairline", srgb(0xFFFFFF, 0.08), increased: srgb(0xFFFFFF, 0.3))
 
     static let chipFill = adaptive("chipFill", light: srgb(0xFFFFFF, 0.5), dark: srgb(0xFFFFFF, 0.08))
-    static let chipBorder = adaptive("chipBorder", light: srgb(0xFFFFFF, 0.7), dark: srgb(0xFFFFFF, 0.12))
+    static let chipBorder = adaptive(
+        "chipBorder", light: srgb(0xFFFFFF, 0.7), dark: srgb(0xFFFFFF, 0.12),
+        highContrastLight: srgb(0x1B2531, 0.35), highContrastDark: srgb(0xFFFFFF, 0.45)
+    )
 
     static let splitFill = adaptive("splitFill", light: srgb(0xFFFFFF, 0.65), dark: srgb(0xFFFFFF, 0.12))
-    static let splitBorder = adaptive("splitBorder", light: srgb(0xFFFFFF, 0.85), dark: srgb(0xFFFFFF, 0.16))
+    static let splitBorder = adaptive(
+        "splitBorder", light: srgb(0xFFFFFF, 0.85), dark: srgb(0xFFFFFF, 0.16),
+        highContrastLight: srgb(0x1B2531, 0.35), highContrastDark: srgb(0xFFFFFF, 0.45)
+    )
     static let splitInset = adaptive("splitInset", light: srgb(0xFFFFFF), dark: srgb(0xFFFFFF, 0.2))
-    static let splitDivider = adaptive("splitDivider", light: srgb(0x000000, 0.12), dark: srgb(0xFFFFFF, 0.16))
+    static let splitDivider = adaptive(
+        "splitDivider", light: srgb(0x000000, 0.12), dark: srgb(0xFFFFFF, 0.16),
+        highContrastLight: srgb(0x000000, 0.4), highContrastDark: srgb(0xFFFFFF, 0.45)
+    )
 
     /// Derived for dark.
     static let emptyCardFill = adaptive("emptyCardFill", light: srgb(0xFFFFFF, 0.3), dark: srgb(0xFFFFFF, 0.04))
@@ -130,9 +168,15 @@ nonisolated enum Palette {
     /// White capsule buttons ("Back to 100%", "Check Now", "Back"). Derived for dark.
     static let secondaryButtonFill = adaptive("secondaryButtonFill", light: srgb(0xFFFFFF), dark: srgb(0xFFFFFF, 0.12))
     /// rgba(27,37,49,0.12): "Back to 100%", onboarding "Back".
-    static let secondaryButtonBorder = adaptive("secondaryButtonBorder", light: srgb(0x1B2531, 0.12), dark: srgb(0xFFFFFF, 0.16))
+    static let secondaryButtonBorder = adaptive(
+        "secondaryButtonBorder", light: srgb(0x1B2531, 0.12), dark: srgb(0xFFFFFF, 0.16),
+        highContrastLight: srgb(0x1B2531, 0.4), highContrastDark: srgb(0xFFFFFF, 0.45)
+    )
     /// rgba(27,37,49,0.14): "Check Now" (Settings2-General).
-    static let secondaryButtonBorderStrong = adaptive("secondaryButtonBorderStrong", light: srgb(0x1B2531, 0.14), dark: srgb(0xFFFFFF, 0.16))
+    static let secondaryButtonBorderStrong = adaptive(
+        "secondaryButtonBorderStrong", light: srgb(0x1B2531, 0.14), dark: srgb(0xFFFFFF, 0.16),
+        highContrastLight: srgb(0x1B2531, 0.4), highContrastDark: srgb(0xFFFFFF, 0.45)
+    )
     /// `0 1px 3px` rgba(0,0,0,0.1): "Back to 100%", the HUD's "Turn Back On".
     /// "Check Now" and "Back" use `buttonShadow` (0.08).
     static let secondaryButtonShadow = adaptive("secondaryButtonShadow", light: srgb(0x000000, 0.1), dark: .clear)
@@ -142,7 +186,10 @@ nonisolated enum Palette {
     // MARK: Keycaps
 
     static let keyFace = adaptive("keyFace", light: srgb(0xFFFFFF), dark: srgb(0x222C38))
-    static let keyBorder = adaptive("keyBorder", light: srgb(0x000000, 0.12), dark: srgb(0xFFFFFF, 0.16))
+    static let keyBorder = adaptive(
+        "keyBorder", light: srgb(0x000000, 0.12), dark: srgb(0xFFFFFF, 0.16),
+        highContrastLight: srgb(0x000000, 0.4), highContrastDark: srgb(0xFFFFFF, 0.45)
+    )
     static let keyEdge = adaptive("keyEdge", light: srgb(0x000000, 0.12), dark: srgb(0x0B0F14))
     static let keyText = adaptive("keyText", light: srgb(0x1B2531), dark: srgb(0xF5F5F7))
     static let keyAccentBorder = adaptive("keyAccentBorder", light: srgb(0x785000, 0.3), dark: srgb(0xFFFFFF, 0.3))
@@ -257,6 +304,12 @@ nonisolated enum Palette {
             return isDark ? dark : light
         }
         return Color(nsColor: color)
+    }
+
+    /// A token that looks the same in light and dark but gets stronger with
+    /// Increase Contrast (for colours on the dark heroes or on the white thumb).
+    private static func contrastAware(_ name: String, _ normal: NSColor, increased: NSColor) -> Color {
+        adaptive(name, light: normal, dark: normal, highContrastLight: increased, highContrastDark: increased)
     }
 }
 

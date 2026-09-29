@@ -85,6 +85,35 @@ final class UserNotifier: NSObject, DeskModeNotifier, UNUserNotificationCenterDe
         ))
     }
 
+    // MARK: - Conflicting apps
+
+    /// Another display utility is running that fights `notice.feature`.
+    /// `ConflictAdvisor` already limits these to one per app and feature per launch.
+    func conflict(_ notice: ConflictNotice) {
+        post(Self.note(for: notice))
+    }
+
+    /// One id per app: a newer warning about the same app replaces the older one.
+    nonisolated static func note(for notice: ConflictNotice) -> Note {
+        let name = notice.app.name
+        let body: String
+        switch notice.feature {
+        case .deskMode:
+            body = String(localized: "Notification.Conflict.DeskMode.Body", defaultValue: "It can turn your built-in screen back on. Quit it while you use Desk Mode.", comment: "Notification body. \"It\" is another display app (named in the title, e.g. BetterDisplay) that can switch the MacBook's own screen back on while Desk Mode (turns the MacBook's own screen off) has it off.")
+        case .boost:
+            body = String(localized: "Notification.Conflict.Boost.Body", defaultValue: "It also brightens your built-in screen, so the two can fight. Quit it while you use Brightness Boost.", comment: "Notification body. \"It\" is another display app (named in the title, e.g. Vivid) that also makes the MacBook's own screen brighter than normal, like Lidless's Brightness Boost; \"the two\" are that app and Lidless.")
+        case .externalBrightness:
+            body = String(localized: "Notification.Conflict.External.Body", defaultValue: "It also sets your external displays' brightness, so the two can fight. Quit it while Lidless dims them.", comment: "Notification body. \"It\" is another display app (named in the title, e.g. MonitorControl) that also changes the brightness of external monitors; \"the two\" are that app and Lidless.")
+        }
+        return Note(
+            id: "conflict.\(notice.app.id)",
+            thread: "conflicts",
+            title: String(localized: "Notification.Conflict.Title", defaultValue: "\(name) is also running", comment: "Notification title when another display app that fights Lidless is open. The placeholder is that app's name, e.g. \"BetterDisplay\"."),
+            body: body,
+            sound: false
+        )
+    }
+
     // MARK: - UNUserNotificationCenterDelegate
 
     /// Show banners while Lidless is frontmost too (by default they are dropped).
@@ -186,7 +215,7 @@ final class UserNotifier: NSObject, DeskModeNotifier, UNUserNotificationCenterDe
             title = String(localized: "Notification.EngageFailed.Title", defaultValue: "Desk Mode didn't turn on", comment: "Notification title when Desk Mode (turns the MacBook's own screen off while external displays are connected) failed to start.")
             body = String(localized: "Notification.EngageFailed.Body", defaultValue: "Lidless couldn't turn the built-in screen off, so it left it on.", comment: "Notification body when turning the MacBook's own screen off failed or could not be confirmed, so Lidless left it on.")
         case .timeLimit:
-            body = String(localized: "Notification.Restored.TimeLimit.Body", defaultValue: "Development builds end Desk Mode after a few minutes, so Lidless switched your built-in screen back on.", comment: "Only in development (Debug) builds, never in released versions: Desk Mode ended after its test time limit and the MacBook's own screen came back on. Low priority.")
+            body = String(localized: "Notification.Restored.TimeLimit.Body", defaultValue: "Desk Mode reached the test time limit set for this build, so Lidless switched your built-in screen back on.", comment: "Only in development (Debug) builds with a test time limit turned on, never in released versions: Desk Mode ended after that time limit and the MacBook's own screen came back on. Low priority.")
         }
         return Note(id: "desk-mode.restored", thread: "desk-mode", title: title, body: body, sound: true)
     }

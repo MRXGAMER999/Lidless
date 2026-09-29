@@ -55,6 +55,11 @@ private struct PanicKeyHero: View {
     @State private var trial: PanicTrial = .idle
     /// Why "Change Keys" refused the last keys, shown under the buttons.
     @State private var recorderProblem: String?
+    /// Why the panic key may not work (refused by macOS, shared with another
+    /// app, not registered), shown under the buttons too.
+    @State private var notice: PanicKeyNotice?
+    /// The last panic key recorded here, until the app has registered it.
+    @State private var change: PanicKeyNotice.Change?
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -82,7 +87,7 @@ private struct PanicKeyHero: View {
                         TryItButton(trial: trial, action: toggleTrial)
                             .disabled(isRecording)
                     }
-                    // Not designed. The hero (min 230 pt) grows to fit it.
+                    // Not designed. The hero (min 230 pt) grows to fit them.
                     if let recorderProblem {
                         Text(verbatim: recorderProblem)
                             .lidlessStyle(.helper)
@@ -90,6 +95,14 @@ private struct PanicKeyHero: View {
                             .fixedSize(horizontal: false, vertical: true)
                             // Announced, and part of the recorder's value.
                             .accessibilityHidden(true)
+                    }
+                    if let notice {
+                        Text(verbatim: notice.message(keys: { Self.labels($0).keycaps.joined() }))
+                            .lidlessStyle(.helper)
+                            .foregroundStyle(Palette.goldOnDark)
+                            .fixedSize(horizontal: false, vertical: true)
+                            // Keys read as words, not symbols.
+                            .accessibilityLabel(Text(verbatim: notice.message(keys: { Self.labels($0).spokenName })))
                     }
                 }
                 .padding(.top, 4)
@@ -107,22 +120,67 @@ private struct PanicKeyHero: View {
         .accessibilityLabel(Text("Panic key", comment: "Accessibility label of the panic key hero in Settings › Keys & App"))
         .animation(reduceMotion ? nil : .easeOut(duration: 0.2), value: trial)
         .task(id: trial) { await expire(trial) }
+        // After each change, once the app has registered (or refused) the keys.
+        .task(id: PanicKeyCheck(saved: panic, change: change)) {
+            try? await Task.sleep(nanoseconds: 250 * NSEC_PER_MSEC)
+            guard !Task.isCancelled else { return }
+            refreshNotice()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in refreshNotice() }
         .onDisappear {
             stopTrial()
             recorderProblem = nil
+            change = nil
+            notice = nil
         }
+    }
+
+    /// Records into the saved panic key, remembering the change to check it.
+    private var recordedPanic: Binding<KeyShortcut?> {
+        Binding(
+            get: { panic },
+            set: { newValue in
+                if let newValue, let previous = panic, newValue != previous {
+                    change = PanicKeyNotice.Change(recorded: newValue, previous: previous)
+                }
+                panic = newValue
+            }
+        )
+    }
+
+    private func refreshNotice() {
+        guard let saved = panic else { return }
+        let result = PanicKeyNotice.resolve(change: change, saved: saved, registration: actions.panicKeyRegistration())
+        if result.change != change { change = result.change }
+        guard result.notice != notice else { return }
+        notice = result.notice
+        // Only a refusal answers something the user just did; the others are
+        // read in place.
+        if let refused = result.notice, case .refused = refused {
+            announce(refused.message(keys: { Self.labels($0).spokenName }))
+        }
+    }
+
+    /// Keycaps and spoken name on the current keyboard layout.
+    private static func labels(_ shortcut: KeyShortcut) -> ShortcutLabels {
+        ShortcutLabels(shortcut, keyLabel: shortcut.displayKeyLabel)
     }
 
     /// "Change Keys": records a new panic key. Clearing is off, so the panic
     /// key can be changed but never removed.
     private var changeKeysButton: some View {
         ShortcutRecorder(
-            shortcut: $panic,
+            shortcut: recordedPanic,
             slot: .panic,
             shortcuts: shortcuts,
             allowsClearing: false,
             setRecording: { recording in
-                if recording { stopTrial() }
+                if recording {
+                    stopTrial()
+                    // A new recording replaces the last refusal.
+                    if case .refused = notice { notice = nil }
+                    change = nil
+                }
                 isRecording = recording
                 actions.setRecordingShortcut(recording)
             },
@@ -177,6 +235,13 @@ private struct PanicKeyHero: View {
             ]
         )
     }
+}
+
+/// What the panic key check waits on: a new saved key, or a new recording
+/// (which may end on the key it started from, if the app refused it at once).
+private struct PanicKeyCheck: Equatable {
+    let saved: KeyShortcut?
+    let change: PanicKeyNotice.Change?
 }
 
 /// Where "Try It" is: waiting for the panic key, or showing that it worked.
@@ -444,6 +509,8 @@ private struct AboutCard: View {
                         .lidlessStyle(.appTitle)
                         .foregroundStyle(Palette.textPrimary)
                         .lineBox(.appTitle)
+                        // The About card's heading.
+                        .accessibilityAddTraits(.isHeader)
                     licenceLine
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)

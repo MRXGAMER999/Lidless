@@ -37,6 +37,9 @@ final class DeskModeController {
     static let ruleWakeGrace: TimeInterval = 5
     /// The longest the quit, signal and power-off paths wait for the panel.
     static let exitRestoreTimeout: TimeInterval = 3
+    /// Debug builds only: seconds after which Desk Mode ends by itself, from the
+    /// launch argument `-LidlessDeskModeTimeLimit 300` or the same defaults key.
+    static let debugTimeLimitKey = "LidlessDeskModeTimeLimit"
 
     private(set) var machine: DeskModeMachine
     private var rules = DeskModeRuleEngine()
@@ -111,7 +114,8 @@ final class DeskModeController {
 
     /// - Parameters:
     ///   - configuration: Timings; the method and the two switches come from
-    ///     `model.preferences`. Debug builds end Desk Mode after 5 minutes.
+    ///     `model.preferences`. Debug builds end Desk Mode after
+    ///     `debugTimeLimitKey` seconds when that is set (off by default).
     ///   - clock: Monotonic seconds, the clock the sidecar and the prompt share.
     init(
         model: AppModel,
@@ -130,7 +134,7 @@ final class DeskModeController {
         power = model.system.power
         var configuration = configuration
         #if DEBUG
-        if configuration.maxDuration == nil { configuration.maxDuration = 300 }
+        if configuration.maxDuration == nil { configuration.maxDuration = Self.debugTimeLimit() }
         #endif
         Self.apply(model.preferences.deskMode, forcingPrompt: false, to: &configuration)
         machine = DeskModeMachine(configuration: configuration, availability: model.deskMode.unavailableReason)
@@ -139,6 +143,15 @@ final class DeskModeController {
     deinit {
         tickTimer?.invalidate()
         deadlineTimer?.invalidate()
+    }
+
+    /// The Debug time limit, or nil (the default): no limit. It used to be 5
+    /// minutes in every Debug build, which ended hands-on sessions run from
+    /// Xcode by itself. A breakpoint or a hang doesn't need it: the sidecar
+    /// kills a stopped app after its hang timeout and restores the panel.
+    static func debugTimeLimit(_ defaults: UserDefaults = .standard) -> TimeInterval? {
+        let seconds = defaults.double(forKey: debugTimeLimitKey)
+        return seconds.isFinite && seconds > 0 ? seconds : nil
     }
 
     /// Takes over the popover switch and follows the preferences. Call before
@@ -202,9 +215,11 @@ final class DeskModeController {
             ruleBaselineUntil = clock() + Self.ruleWakeGrace
             send(.didWake)
         case .screensDidSleep:
+            if machine.phase != .idle { log.notice("Screens asleep with Desk Mode on; loss checks wait for them to wake") }
             screensAsleep = true
             pushSnapshot()
         case .screensDidWake:
+            if machine.phase != .idle { log.notice("Screens awake with Desk Mode on") }
             screensAsleep = false
             ruleBaselineUntil = clock() + Self.ruleWakeGrace
         case .sessionDidResignActive:
@@ -305,6 +320,7 @@ final class DeskModeController {
     /// Black out's cover removed itself (its screen went away or changed):
     /// the panel is back, so Desk Mode ends without a notification.
     func coverLost() {
+        if machine.phase != .idle { log.notice("Black out's cover removed itself; ending Desk Mode") }
         send(.turnOff)
     }
 
@@ -444,9 +460,11 @@ final class DeskModeController {
         while !pending.isEmpty {
             let event = pending.removeFirst()
             let before = machine.phase
-            let commands = machine.handle(event, now: clock(), date: date())
+            let now = clock()
+            let commands = machine.handle(event, now: now, date: date())
             if machine.phase != before {
                 log.info("\(Self.describe(before), privacy: .public) → \(Self.describe(self.machine.phase), privacy: .public) on \(Self.describe(event), privacy: .public)")
+                logEnding(from: before, on: event, now: now)
             }
             // Before the commands: the Boost overlay must be gone before a disable starts.
             reportToBoost()
@@ -461,6 +479,22 @@ final class DeskModeController {
             services.hang.setArmed(armHang)
         }
         updateTicking()
+    }
+
+    /// One notice-level line for every path that ends Desk Mode, and one when
+    /// the panel is verified back, so `log stream` (which leaves out info
+    /// lines) always shows why the built-in screen came back.
+    private func logEnding(from before: DeskModeMachine.Phase, on event: DeskModeEvent, now: TimeInterval) {
+        let after = machine.phase
+        if let end = DeskModeEnd.detect(from: before, to: after, on: event) {
+            let length = DeskModeEnd.sessionLength(of: before, now: now, confirmationSeconds: machine.configuration.confirmationSeconds)
+            let seconds = length.map { String(format: "%.0f", $0) } ?? "?"
+            log.notice("Desk Mode ending [\(end.key, privacy: .public)] after \(seconds, privacy: .public) s in \(Self.describe(before), privacy: .public), on \(Self.describe(event), privacy: .public): \(end.explanation, privacy: .public)")
+        } else if case .restoring(let reason, _, _) = before, after == .idle {
+            log.notice("Built-in screen back on [\(reason.logKey, privacy: .public)]; Desk Mode is off")
+        } else if case .restoring(let reason, _, _) = after, before == .idle {
+            log.notice("Restoring the built-in screen from idle [\(reason.logKey, privacy: .public)] on \(Self.describe(event), privacy: .public)")
+        }
     }
 
     /// The machine reads `askBeforeKeeping` when the disable lands, so the

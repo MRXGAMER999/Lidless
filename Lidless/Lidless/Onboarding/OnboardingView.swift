@@ -43,10 +43,11 @@ struct OnboardingView: View {
         .padding(Spacing.hairline)
         .frame(width: OnboardingMetrics.windowSize.width, height: OnboardingMetrics.windowSize.height)
         .clipped()
-        .background { SettingsWindowBackground() }
+        .background { SettingsBackdrop() }
         // The title bar is part of the layout (the traffic-light row).
         .ignoresSafeArea()
         .id(flow.presentation)
+        .settingsAccessibilityOptions()
     }
 
     private func navigate(_ change: () -> Void) {
@@ -105,7 +106,8 @@ private struct WelcomeHero: View {
                     .frame(width: 58, height: 58)
                     // drop-shadow(0 6px 14px); see PopoverHeader for the radius.
                     .lidlessShadow(ShadowLayer(color: Palette.gold.opacity(0.3), radius: 14, y: 6))
-                    .accessibilityLabel(Text("Lidless app icon", comment: "VoiceOver label of the app icon"))
+                    // Decorative: the title below says it.
+                    .accessibilityHidden(true)
                 Text("Welcome to Lidless", comment: "Onboarding step 1 title")
                     .lidlessStyle(.onboardingTitle)
                     .foregroundStyle(Palette.white)
@@ -176,6 +178,8 @@ private struct FeatureCard: View {
                 .foregroundStyle(Palette.ink)
                 .lineBox(.featureTitle)
                 .padding(.top, 2)
+                // In the headings rotor, with the description read after it.
+                .accessibilityAddTraits(.isHeader)
             detail
                 .lidlessStyle(.small)
                 .foregroundStyle(Palette.text4)
@@ -185,7 +189,7 @@ private struct FeatureCard: View {
         .padding(14 + Spacing.hairline)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background { OnboardingCardSurface() }
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .contain)
     }
 }
 
@@ -333,6 +337,7 @@ private struct PanicKeyStatus: View {
         .padding(.horizontal, 14)
         .frame(height: 28)
         .background { Capsule().fill(Palette.white.opacity(0.08)) }
+        .overlay { IncreasedContrastRingOnDark(shape: Capsule()) }
         .animation(reduceMotion ? nil : .spring(response: 0.3, dampingFraction: 0.7), value: worked)
         .accessibilityElement(children: .combine)
     }
@@ -414,7 +419,7 @@ private struct OnboardingPageDots: View {
 }
 
 /// The onboarding cards' `settingsCard` surface at r14: 0.84 white, a white
-/// border, a 1 pt black 5% ring outside it and a soft warm drop.
+/// border, a 1 pt black 5% ring outside it (`settingsCardRing`) and a soft warm drop.
 private struct OnboardingCardSurface: View {
     var body: some View {
         let radius = Radius.card
@@ -422,8 +427,9 @@ private struct OnboardingCardSurface: View {
         shape.fill(Palette.white.opacity(0.84))
             .overlay { shape.strokeBorder(Palette.white.opacity(0.9), lineWidth: 1) }
             .background {
+                // Black 5%, or stronger with Increase Contrast (the token's variant).
                 RoundedRectangle(cornerRadius: radius + 1, style: .circular)
-                    .strokeBorder(Color.black.opacity(0.05), lineWidth: 1)
+                    .strokeBorder(Palette.settingsCardRing, lineWidth: 1)
                     .padding(-1)
             }
             .background {

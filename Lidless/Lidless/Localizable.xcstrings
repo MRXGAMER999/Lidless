@@ -4,6 +4,9 @@
     "%@ brightness" : {
       "comment" : "VoiceOver label of an external display's brightness slider; the variable is the display name"
     },
+    "%@ · Dimmed by Lidless" : {
+      "comment" : "External display row subtitle when the monitor can't change its own brightness, so Lidless darkens the picture with an overlay; the variable is a resolution such as 5K or 1080p. Keep it short: it shares one line with the slider."
+    },
     "%@ · Extended" : {
       "comment" : "External display row subtitle; the variable is a resolution such as 5K or 1080p"
     },
@@ -14,7 +17,29 @@
       "comment" : "External display row subtitle; the variable is a resolution such as 5K or 1080p"
     },
     "%@, Boost" : {
-      "comment" : "VoiceOver value of the built-in brightness slider while boosted, e.g. \"160%, Boost\""
+      "comment" : "VoiceOver reading of the built-in display card's brightness percentage while boosted, e.g. “160%, Boost”. The variable is the brightness in percent."
+    },
+    "%@, Boost, about %lld nits" : {
+      "comment" : "VoiceOver value of the built-in brightness slider while boosted, e.g. “160%, Boost, about 800 nits”. The first variable is the brightness in percent (above 100%), the second the estimated brightness in nits. “Boost” is the feature that makes the screen brighter than normal.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, Boost, about %2$lld nits"
+          }
+        }
+      }
+    },
+    "%@, about %lld nits" : {
+      "comment" : "VoiceOver value of the built-in brightness slider, e.g. “70%, about 350 nits”. The first variable is the brightness in percent, the second the estimated brightness in nits.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, about %2$lld nits"
+          }
+        }
+      }
     },
     "%lld displays" : {
       "comment" : "Popover status line segment: number of lit displays",
@@ -39,20 +64,254 @@
         }
       }
     },
+    "%lld nits" : {
+      "comment" : "VoiceOver value of the Boost ceiling slider; the variable is the ceiling in nits, e.g. \"1000 nits\"",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "new",
+                  "value" : "%lld nit"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "new",
+                  "value" : "%lld nits"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld of %lld: %@" : {
+      "comment" : "VoiceOver label of a numbered Safety net item in Settings: its place in the list of three, then its title, e.g. “2 of 3: Ask before keeping it off”",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld: %3$@"
+          }
+        }
+      }
+    },
     "**Boost on · ≈ %@ nits.** Uses more battery and heat. Steps back by itself if your Mac gets hot." : {
       "comment" : "Boost callout in the popover; the variable is the estimated brightness in nits"
     },
+    "A small, open-source menu bar app for your MacBook's screen." : {
+      "comment" : "Onboarding step 1 introduction"
+    },
+    "About %lld nits max, up to %lld%% brightness" : {
+      "comment" : "VoiceOver label of the Boost ceiling headline in Settings › Brightness. The first variable is the ceiling in nits (e.g. 1000), the second the brightest Boost gets as a percentage of normal maximum (e.g. 167).",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "About %1$lld nits max, up to %2$lld%% brightness"
+          }
+        }
+      }
+    },
+    "About %lld nits." : {
+      "comment" : "VoiceOver reading of the hint under the built-in brightness slider when Boost is off (shown as “≈ 350 nits”); the variable is the estimated brightness in nits",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "new",
+                  "value" : "About %lld nit."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "new",
+                  "value" : "About %lld nits."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "About %lld nits. Drag past the line to boost." : {
+      "comment" : "VoiceOver reading of the hint under the built-in brightness slider (shown as “≈ 350 nits · Drag past the line to boost”); the variable is the estimated brightness in nits",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "new",
+                  "value" : "About %lld nit. Drag past the line to boost."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "new",
+                  "value" : "About %lld nits. Drag past the line to boost."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "About Lidless" : {
-      "comment" : "App menu item"
+      "comment" : "App menu item that opens the About window (standard macOS menu item; Lidless is the app name)"
+    },
+    "Above 100%, Boost makes the screen brighter than normal." : {
+      "comment" : "VoiceOver hint of the built-in brightness slider when Boost can be used"
+    },
+    "Add Control or Command to the keys." : {
+      "comment" : "Shortcut recorder: the keys pressed had neither Control nor Command"
+    },
+    "Also checked at wake and login." : {
+      "comment" : "Safety net item 1 helper"
+    },
+    "Always" : {
+      "comment" : "Badge: this safety net item is always on and can't be turned off"
+    },
+    "Another app also uses these keys and may get them first. Pick new ones with Change Keys." : {
+      "comment" : "Note under the panic key buttons in Settings › Keys & App when another app has registered the same keys. “Change Keys” is the button beside it."
+    },
+    "Ask before keeping it off" : {
+      "comment" : "Safety net item 2 title"
+    },
+    "At 100%, the brightness key keeps going into Boost." : {
+      "comment" : "Helper under Keep pressing to boost in Settings › Brightness"
+    },
+    "Auto-brightness can block Boost on some Macs." : {
+      "comment" : "Note under Keep pressing to boost in Settings › Brightness, followed by the Open Displays settings link"
+    },
+    "Auto-update" : {
+      "comment" : "Toggle in Settings › Keys & App › About"
+    },
+    "BRIGHTNESS BOOST" : {
+      "comment" : "Overline of the Settings › Brightness hero, uppercase by design"
+    },
+    "Back" : {
+      "comment" : "Onboarding step 2 button that returns to step 1"
     },
     "Back to 100%" : {
       "comment" : "Popover button that leaves Boost and sets the built-in screen to full normal brightness. The hint “or press brightness down” follows it on the same line, so the two read as one sentence: “[Back to 100%] or press brightness down”."
     },
+    "Battery level" : {
+      "comment" : "Accessibility label of the battery level menu in Settings › Brightness; VoiceOver adds the chosen level"
+    },
+    "Battery runs low" : {
+      "comment" : "Guard rail title in Settings › Brightness"
+    },
+    "Black out" : {
+      "comment" : "Desk Mode method: a black cover over the built-in screen"
+    },
     "Boost" : {
-      "comment" : "Label under the Boost range of the built-in brightness slider"
+      "comment" : "Label under the Boost range of the built-in brightness slider\nName of the on/off setting in the “Set Brightness Boost” Shortcuts action. “Boost” is Lidless’s extra-brightness feature (a noun, not the verb)."
+    },
+    "Boost allowed" : {
+      "comment" : "Accessibility label of the switch that allows Brightness Boost\nLabel of the switch that allows Brightness Boost, in the Settings › Brightness hero"
+    },
+    "Boost ceiling" : {
+      "comment" : "Accessibility label of the Settings › Brightness hero"
+    },
+    "Boost ceiling in nits" : {
+      "comment" : "VoiceOver label of the Boost ceiling slider in Settings › Brightness"
+    },
+    "Boost is turned off in Settings." : {
+      "comment" : "Popover Boost callout: “Boost allowed” is off in Settings › Brightness"
+    },
+    "Boost on or off" : {
+      "comment" : "Quick key row in Settings › Keys & App\nSettings › Keys & App › Quick keys: row for the Boost shortcut"
+    },
+    "Boost on or off already uses these keys." : {
+      "comment" : "Shortcut recorder: the keys pressed are the Boost shortcut's"
+    },
+    "Boost on, about %lld nits. Uses more battery and heat. Steps back by itself if your Mac gets hot." : {
+      "comment" : "VoiceOver reading of the popover's Boost callout (shown as “Boost on · ≈ 800 nits. Uses more battery and heat. …”); the variable is the estimated brightness in nits",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "new",
+                  "value" : "Boost on, about %lld nit. Uses more battery and heat. Steps back by itself if your Mac gets hot."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "new",
+                  "value" : "Boost on, about %lld nits. Uses more battery and heat. Steps back by itself if your Mac gets hot."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Boost ready" : {
+      "comment" : "Badge on the built-in screen in Settings › Brightness › Your screens"
+    },
+    "Boost steps back by itself when it should." : {
+      "comment" : "Description of the Guard rails card in Settings › Brightness"
+    },
+    "Boosting…" : {
+      "comment" : "Popover Boost callout while Lidless waits for macOS to let the built-in screen go brighter (usually under a second)"
+    },
+    "Brightness" : {
+      "comment" : "Settings section switcher: the Brightness tab"
+    },
+    "Brightness Boost" : {
+      "comment" : "Onboarding feature card title\nShort name of the App Shortcut that turns Brightness Boost (Lidless’s extra-brightness feature) on or off, on its tile in Spotlight and the Shortcuts app; keep it short"
+    },
+    "Brightness Boost is already off." : {
+      "comment" : "Shortcuts/Siri reply when Brightness Boost was already off"
+    },
+    "Brightness Boost is already on." : {
+      "comment" : "Shortcuts/Siri reply when Brightness Boost was already on"
+    },
+    "Brightness Boost is off." : {
+      "comment" : "Shortcuts/Siri reply after turning Brightness Boost off (the built-in screen goes to full normal brightness)"
+    },
+    "Brightness Boost is on, but macOS isn't allowing it right now." : {
+      "comment" : "Shortcuts/Siri reply: Boost is set, but macOS gave the screen no extra brightness after several tries; it tries again the next time Boost is asked for"
+    },
+    "Brightness Boost is on, but paused while Low Power Mode is on." : {
+      "comment" : "Shortcuts/Siri reply: Boost is set but paused while macOS Low Power Mode is on. “Low Power Mode” is the macOS feature name; use Apple’s translation."
+    },
+    "Brightness Boost is on, but paused while displays change." : {
+      "comment" : "Shortcuts/Siri reply: Boost is set but paused for a few seconds while a display is connected, disconnected or rearranged"
+    },
+    "Brightness Boost is on, but paused while the battery is low." : {
+      "comment" : "Shortcuts/Siri reply: Boost is set but paused below the battery level set in Settings; it comes back by itself when charging"
+    },
+    "Brightness Boost is on, but paused while the built-in screen is off." : {
+      "comment" : "Shortcuts/Siri reply: Boost is set but paused because the lid is closed or Desk Mode has the built-in screen off"
+    },
+    "Brightness Boost is on, but paused while the screen sleeps." : {
+      "comment" : "Shortcuts/Siri reply: Boost is set but paused while the displays sleep or the screen is locked"
+    },
+    "Brightness Boost is on, but paused while your Mac is hot." : {
+      "comment" : "Shortcuts/Siri reply: Boost is set but paused at the heat level set in Settings; it comes back by itself when the Mac cools down"
+    },
+    "Brightness Boost is on." : {
+      "comment" : "Shortcuts/Siri reply after turning Brightness Boost on"
+    },
+    "Brightness Boost is turned off in Lidless Settings." : {
+      "comment" : "Shortcuts/Siri error: “Boost allowed” is off in Settings › Brightness, so Boost can't be turned on"
+    },
+    "Brightness key goes into Boost" : {
+      "comment" : "Accessibility label of the Keep pressing to boost switch"
     },
     "Bringing the built-in screen back." : {
       "comment" : "Desk Mode card description while turning off"
+    },
+    "Brings the built-in screen back right away, like the panic key. Also turns off Brightness Boost and any dimming of external displays." : {
+      "comment" : "Description of the “Turn the Built-in Display Back On” action in the Shortcuts app. “Brightness Boost” is Lidless’s feature name."
     },
     "Built-in Display" : {
       "comment" : "Title of the popover's built-in display card"
@@ -66,8 +325,20 @@
     "Built-in only" : {
       "comment" : "Popover status line segment: no external displays"
     },
+    "Built-in screen" : {
+      "comment" : "VoiceOver label of the rule's off/on menu in Settings"
+    },
+    "Built-in screen is off" : {
+      "comment" : "Title of the keep-or-revert prompt shown after Desk Mode turned the built-in screen off"
+    },
     "Built-in screen is off. Lid stays open to keep it cool." : {
       "comment" : "Desk Mode card description when on"
+    },
+    "Built-in screen off" : {
+      "comment" : "Settings Desk Mode hero chip"
+    },
+    "Built-in screen on" : {
+      "comment" : "Settings Desk Mode hero chip"
     },
     "BuiltInDisplay.Readout.Off" : {
       "comment" : "Readout at the right of the built-in display card's title while Desk Mode has switched the screen off (in place of a percentage). Describes the screen, not a setting.",
@@ -81,29 +352,172 @@
         }
       }
     },
+    "Can you see this? Keep it off, or it turns back on in **^[%lld second](inflect: true)**." : {
+      "comment" : "Keep-or-revert prompt text under the title. The variable is the whole seconds left before the built-in screen turns back on; the part between ** is bold, and ^[…](inflect: true) makes the noun agree with the number.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "new",
+                  "value" : "Can you see this? Keep it off, or it turns back on in **%lld second**."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "new",
+                  "value" : "Can you see this? Keep it off, or it turns back on in **%lld seconds**."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Change Keys" : {
+      "comment" : "Panic key hero: button that records new keys for the panic key"
+    },
+    "Check Now" : {
+      "comment" : "Button in Settings › Keys & App › About: checks for a newer version"
+    },
+    "Checks that the panic key reaches Lidless. Nothing turns off." : {
+      "comment" : "VoiceOver hint of the Try It button"
+    },
+    "Click a shortcut, then press the new keys." : {
+      "comment" : "Hint under the quick keys in Settings › Keys & App"
+    },
     "Close" : {
-      "comment" : "Window menu item"
+      "comment" : "Window menu item that closes the window (a command, the standard macOS menu item: use the system's usual translation)"
     },
     "Command" : {
       "comment" : "Spoken name of the Command key"
+    },
+    "Continue" : {
+      "comment" : "Onboarding step 1 button that goes to step 2"
     },
     "Control" : {
       "comment" : "Spoken name of the Control key"
     },
     "Copy" : {
-      "comment" : "Edit menu item"
+      "comment" : "Edit menu item that copies the selection to the clipboard (a command, the standard macOS menu item: use the system's usual translation)"
+    },
+    "Critical" : {
+      "comment" : "Heat level option in Settings › Brightness › Guard rails"
     },
     "Cut" : {
-      "comment" : "Edit menu item"
+      "comment" : "Edit menu item that cuts the selection to the clipboard (a command, the standard macOS menu item: use the system's usual translation)"
     },
     "DESK MODE" : {
-      "comment" : "Overline of the popover's Desk Mode card"
+      "comment" : "Overline of the Settings Desk Mode hero; keep it uppercase\nOverline of the popover's Desk Mode card"
+    },
+    "Delay" : {
+      "comment" : "VoiceOver label of the rule's delay menu in Settings"
     },
     "Desk Mode" : {
-      "comment" : "VoiceOver label of the Desk Mode switch"
+      "comment" : "Onboarding feature card title\nSettings section switcher: the Desk Mode tab\nVoiceOver label of the Desk Mode switch"
+    },
+    "Desk Mode Off" : {
+      "comment" : "Short name of the App Shortcut that turns Desk Mode off, on its tile in Spotlight and the Shortcuts app; keep it short"
+    },
+    "Desk Mode On" : {
+      "comment" : "Short name of the App Shortcut that turns Desk Mode on, on its tile in Spotlight and the Shortcuts app; keep it short"
+    },
+    "Desk Mode State" : {
+      "comment" : "Short name of the App Shortcut that tells whether Desk Mode is on, on its tile in Spotlight and the Shortcuts app; keep it short"
+    },
+    "Desk Mode can't be used right now." : {
+      "comment" : "Tooltip and VoiceOver hint of Test the safety net while Desk Mode is unavailable (no display, lid closed, unsupported Mac)"
+    },
+    "Desk Mode is already off." : {
+      "comment" : "Shortcuts/Siri reply after “Turn Desk Mode Off” when it was already off"
+    },
+    "Desk Mode is already on." : {
+      "comment" : "Shortcuts/Siri reply after “Turn Desk Mode On” when it was already on"
+    },
+    "Desk Mode is off" : {
+      "comment" : "Settings Desk Mode hero title"
+    },
+    "Desk Mode is off while the lid is closed." : {
+      "comment" : "Shortcuts/Siri reply: Desk Mode is off and can't be turned on while the MacBook lid is closed"
+    },
+    "Desk Mode is off." : {
+      "comment" : "Shortcuts/Siri reply: Desk Mode is off and could be turned on"
+    },
+    "Desk Mode is off. It needs an external display." : {
+      "comment" : "Shortcuts/Siri reply: Desk Mode is off and can't be turned on until a monitor is plugged in"
+    },
+    "Desk Mode is off. The built-in screen is back on." : {
+      "comment" : "Shortcuts/Siri reply after turning Desk Mode off"
+    },
+    "Desk Mode is on" : {
+      "comment" : "Settings Desk Mode hero title"
+    },
+    "Desk Mode is on. Choose Keep Off on your other display to keep the built-in screen off." : {
+      "comment" : "Shortcuts/Siri reply after turning Desk Mode on when the keep-or-revert prompt is showing (“Ask before keeping it off” is on, or Lidless's setup isn't finished yet). “Keep Off” is the prompt's button; without it the screen comes back after 15 seconds."
+    },
+    "Desk Mode is on. The built-in screen is off." : {
+      "comment" : "Shortcuts/Siri reply: Desk Mode is on"
+    },
+    "Desk Mode is still turning on." : {
+      "comment" : "Shortcuts/Siri reply when the built-in screen is still switching off after several seconds"
+    },
+    "Desk Mode is turning off." : {
+      "comment" : "Shortcuts/Siri reply: the built-in screen is coming back right now"
+    },
+    "Desk Mode is turning on." : {
+      "comment" : "Shortcuts/Siri reply: the built-in screen is switching off right now"
+    },
+    "Desk Mode isn't available" : {
+      "comment" : "Settings Desk Mode hero title when this Mac or macOS can't use Desk Mode"
+    },
+    "Desk Mode isn't available on this Mac." : {
+      "comment" : "Shortcuts/Siri reply: this Mac can't use Desk Mode"
+    },
+    "Desk Mode isn't available on this version of macOS." : {
+      "comment" : "Shortcuts/Siri reply: this macOS version can't use Desk Mode"
+    },
+    "Desk Mode needs a display" : {
+      "comment" : "Settings Desk Mode hero title when no external display is connected"
+    },
+    "Desk Mode needs an external display. Plug in a monitor and try again." : {
+      "comment" : "Shortcuts/Siri error when turning Desk Mode on with no external display connected"
+    },
+    "Desk Mode on or off" : {
+      "comment" : "Quick key row in Settings › Keys & App\nSettings › Keys & App › Quick keys: row for the Desk Mode shortcut"
+    },
+    "Desk Mode on or off already uses these keys." : {
+      "comment" : "Shortcut recorder: the keys pressed are the Desk Mode shortcut's"
+    },
+    "Desk Mode status" : {
+      "comment" : "VoiceOver label of the Settings Desk Mode hero"
     },
     "Desk Mode, unavailable" : {
       "comment" : "VoiceOver label of the Desk Mode switch when it can't be used"
+    },
+    "DeskMode.Hero.Switch.Off" : {
+      "comment" : "Beside the big Desk Mode switch in Settings when it is off",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Off"
+          }
+        }
+      }
+    },
+    "DeskMode.Hero.Switch.On" : {
+      "comment" : "Beside the big Desk Mode switch in Settings when it is on",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "On"
+          }
+        }
+      }
     },
     "DeskMode.Title.Off" : {
       "comment" : "Desk Mode card title: Desk Mode (the setting) is off. Shown large above the card's description.",
@@ -129,6 +543,119 @@
         }
       }
     },
+    "DeskRule.Action.Off" : {
+      "comment" : "Rule sentence token: turn the built-in screen off. Lowercase, mid-sentence.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "off"
+          }
+        }
+      }
+    },
+    "DeskRule.Action.On" : {
+      "comment" : "Rule sentence token: leave the built-in screen on (the rule does nothing). Lowercase, mid-sentence.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "on"
+          }
+        }
+      }
+    },
+    "DeskRule.Delay.Now" : {
+      "comment" : "Rule sentence token: no delay. Lowercase, mid-sentence.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "right away"
+          }
+        }
+      }
+    },
+    "DeskRule.Delay.Seconds" : {
+      "comment" : "Rule sentence token: the delay, e.g. 3 seconds. Lowercase, mid-sentence.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "new",
+                  "value" : "%lld second"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "new",
+                  "value" : "%lld seconds"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "DeskRule.Display.Any" : {
+      "comment" : "Rule sentence token: the rule fires for any external display. Lowercase, mid-sentence.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "any display"
+          }
+        }
+      }
+    },
+    "DeskRule.Display.Unnamed" : {
+      "comment" : "Rule sentence token for a chosen display whose name is unknown",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "a saved display"
+          }
+        }
+      }
+    },
+    "DeskRule.Sentence" : {
+      "comment" : "Settings Desk Mode rule. Keep {display}, {action} and {delay}: each becomes a pop-up menu (e.g. \"any display\", \"off\", \"3 seconds\").",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "When I plug in {display}, turn the built-in screen {action} after {delay}."
+          }
+        }
+      }
+    },
+    "DeskRule.Sentence.Now" : {
+      "comment" : "Settings Desk Mode rule when the delay is \"right away\". Keep {display}, {action} and {delay}: each becomes a pop-up menu (e.g. \"any display\", \"off\", \"right away\").",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "When I plug in {display}, turn the built-in screen {action} {delay}."
+          }
+        }
+      }
+    },
+    "Disconnect" : {
+      "comment" : "Desk Mode method: SkyLight takes the built-in screen out of the arrangement"
+    },
+    "Display" : {
+      "comment" : "VoiceOver label of the rule's display menu in Settings"
+    },
     "Display.Name.BuiltIn" : {
       "comment" : "Name of the Mac's own screen when macOS doesn't report one, for example while the lid is closed",
       "extractionState" : "extracted_with_value",
@@ -153,14 +680,83 @@
         }
       }
     },
+    "Drag the handle to set how bright Boost can go. Normal brightness stops near %@." : {
+      "comment" : "Helper under the Boost ceiling in Settings › Brightness. The variable is this Mac's normal maximum brightness in nits, e.g. 600."
+    },
     "EXTERNAL DISPLAYS" : {
       "comment" : "Section heading in the popover, uppercase by design"
     },
     "Edit" : {
-      "comment" : "Main menu title"
+      "comment" : "Title of the Edit menu in the menu bar (a noun, the standard macOS menu: use the system's usual translation)"
+    },
+    "Fair" : {
+      "comment" : "Heat level option in Settings › Brightness › Guard rails"
+    },
+    "Free and open source · MIT License · [Source on GitHub](source)" : {
+      "comment" : "Licence line in Settings › Keys & App › About. Keep the Markdown link: the words in [brackets] become a link to the source code; keep “(source)” as is."
+    },
+    "Full-screen limit" : {
+      "comment" : "Label under the 1,000 nit mark of the Boost ceiling slider"
+    },
+    "Get Desk Mode State" : {
+      "comment" : "Name of the Shortcuts/Siri action that reports whether Desk Mode is on"
+    },
+    "Go past normal brightness on XDR screens, for bright rooms and sun." : {
+      "comment" : "Onboarding Brightness Boost card description"
+    },
+    "Guard rails" : {
+      "comment" : "Card title in Settings › Brightness"
+    },
+    "Heat level" : {
+      "comment" : "Accessibility label of the heat level menu in Settings › Brightness; VoiceOver adds the chosen level"
+    },
+    "Heat.Normal" : {
+      "comment" : "Heat level option in Settings › Brightness › Guard rails (the Mac's normal temperature). A separate key from the slider's “Normal” brightness zone.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Normal"
+          }
+        }
+      }
     },
     "Hide Lidless" : {
-      "comment" : "App menu item"
+      "comment" : "App menu item that hides Lidless's windows (standard macOS menu item; Lidless is the app name)"
+    },
+    "How it switches off" : {
+      "comment" : "Settings Desk Mode card title"
+    },
+    "Icon shows what's on" : {
+      "comment" : "Toggle in Settings › Keys & App › Menu bar"
+    },
+    "Icon states: normal, Desk Mode, Boost" : {
+      "comment" : "VoiceOver label of the three menu bar icon previews in Settings"
+    },
+    "If you ever can't see a screen, press it. The built-in display comes back, no matter what." : {
+      "comment" : "Onboarding step 2 introduction; “it” is the panic key"
+    },
+    "It Works" : {
+      "comment" : "The Try It button after the panic key was pressed, next to a check mark"
+    },
+    "It works. Press it any time you can't see a screen." : {
+      "comment" : "Onboarding status after the user pressed the panic key while trying it; replaces “Try it now. We'll show a check mark when it works.”"
+    },
+    "It works. The panic key brings your screen back." : {
+      "comment" : "VoiceOver announcement after the panic key was pressed during Try It"
+    },
+    "Keep Off" : {
+      "comment" : "Keep-or-revert prompt button that keeps the built-in screen off"
+    },
+    "Keep pressing to boost" : {
+      "comment" : "Setting title in Settings › Brightness: the brightness-up key goes on into Boost at 100%"
+    },
+    "Keys & App" : {
+      "comment" : "Settings section switcher: the shortcuts and app tab"
+    },
+    "Learn your panic key" : {
+      "comment" : "Onboarding step 2 title"
     },
     "Lid closed" : {
       "comment" : "Desk Mode card title when the MacBook lid is closed\nPopover status line segment"
@@ -168,8 +764,43 @@
     "Lid open" : {
       "comment" : "Popover status line segment"
     },
+    "Lid open, so heat can escape" : {
+      "comment" : "Caption under the Desk Mode illustration in Settings"
+    },
     "Lidless" : {
       "comment" : "Accessibility title of the menu bar popover"
+    },
+    "Lidless %@" : {
+      "comment" : "App name and version in Settings › Keys & App › About; the variable is the version, e.g. 0.1.0"
+    },
+    "Lidless Preferences" : {
+      "comment" : "Title of the Settings window on macOS 12, which calls settings Preferences (hidden; read by VoiceOver and shown in the Window menu)"
+    },
+    "Lidless Settings" : {
+      "comment" : "Title of the Settings window (hidden; read by VoiceOver and shown in the Window menu)"
+    },
+    "Lidless app icon" : {
+      "comment" : "Accessibility label of the app icon in Settings › Keys & App › About"
+    },
+    "Lidless couldn't turn the built-in screen off. Try again in a moment." : {
+      "comment" : "Shortcuts/Siri error: Desk Mode was asked to turn on but the built-in screen stayed on"
+    },
+    "Lidless couldn't use %@. The panic key is still %@." : {
+      "comment" : "Note under the panic key buttons in Settings › Keys & App when macOS refused the keys just recorded. The variables are the refused keys and the panic key kept, e.g. ⌃⌥⌘K and ⌃⌥⌘B.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Lidless couldn't use %1$@. The panic key is still %2$@."
+          }
+        }
+      }
+    },
+    "Lidless is still bringing the built-in screen back." : {
+      "comment" : "Shortcuts/Siri reply when the built-in screen hasn’t come back yet after several seconds (Lidless keeps trying)"
+    },
+    "Lidless isn't ready yet. Try again in a moment." : {
+      "comment" : "Shortcuts/Siri error: the app is still starting (or started in safe mode) and can't run the action"
     },
     "Lidless menu" : {
       "comment" : "VoiceOver label of the menu bar icon"
@@ -180,11 +811,38 @@
     "Lidless menu, Desk Mode on" : {
       "comment" : "VoiceOver label of the menu bar icon"
     },
+    "Listening for new keys" : {
+      "comment" : "VoiceOver value of a shortcut recorder while it waits for keys"
+    },
+    "Listening for new keys. %@" : {
+      "comment" : "VoiceOver value of a shortcut recorder that refused the keys and keeps listening; the variable is why, e.g. “macOS already uses these keys.”"
+    },
+    "Mac gets hot" : {
+      "comment" : "Guard rail title in Settings › Brightness"
+    },
+    "MacBook with lid open and screen off, next to a glowing monitor" : {
+      "comment" : "VoiceOver description of the Desk Mode illustration when Desk Mode is on\nVoiceOver label of the Desk Mode illustration when the built-in screen is off"
+    },
+    "MacBook with lid open and screen on, next to a glowing monitor" : {
+      "comment" : "VoiceOver description of the Desk Mode illustration when Desk Mode is off"
+    },
+    "Menu bar" : {
+      "comment" : "Card title in Settings › Keys & App"
+    },
     "Minimize" : {
-      "comment" : "Window menu item"
+      "comment" : "Window menu item that minimizes the window to the Dock (a command, the standard macOS menu item: use the system's usual translation)"
     },
     "Needs a display" : {
       "comment" : "Desk Mode card title when no external display is connected"
+    },
+    "Needs your OK in System Settings." : {
+      "comment" : "Hint under Start Lidless when I log in, while macOS waits for approval in Login Items"
+    },
+    "Never" : {
+      "comment" : "Battery option in Settings › Brightness › Guard rails: Boost doesn't pause on low battery"
+    },
+    "No answer in 15 seconds? It turns back on." : {
+      "comment" : "Safety net item 2 helper"
     },
     "No external displays" : {
       "comment" : "Empty state title in the popover's external displays section"
@@ -192,11 +850,245 @@
     "Normal" : {
       "comment" : "Label under the normal range of the built-in brightness slider"
     },
+    "Normal max" : {
+      "comment" : "Label under the normal-maximum mark of the Boost ceiling slider"
+    },
+    "Normal only" : {
+      "comment" : "Badge on a screen that can't boost in Settings › Brightness › Your screens"
+    },
     "Not available" : {
       "comment" : "Desk Mode card title when this Mac or macOS can't use Desk Mode"
     },
+    "Not set" : {
+      "comment" : "Shortcut recorder with no shortcut (the user removed it)"
+    },
+    "Notification.BoostPaused.Battery.Body" : {
+      "comment" : "Notification body when Brightness Boost (extra brightness beyond the normal maximum) paused itself because the battery fell below the level chosen in Settings.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Your battery is running low. Boost comes back when you plug in your Mac."
+          }
+        }
+      }
+    },
+    "Notification.BoostPaused.Hot.Body" : {
+      "comment" : "Notification body when Brightness Boost (extra brightness beyond the normal maximum) paused itself because the Mac got too hot.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Your Mac is running hot. Boost comes back when it cools down."
+          }
+        }
+      }
+    },
+    "Notification.BoostPaused.Title" : {
+      "comment" : "Notification title when Brightness Boost (extra brightness beyond the normal maximum) turned itself off for now. \"Brightness Boost\" is a feature name.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Brightness Boost paused"
+          }
+        }
+      }
+    },
+    "Notification.Conflict.Boost.Body" : {
+      "comment" : "Notification body. \"It\" is another display app (named in the title, e.g. Vivid) that also makes the MacBook's own screen brighter than normal, like Lidless's Brightness Boost; \"the two\" are that app and Lidless.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "It also brightens your built-in screen, so the two can fight. Quit it while you use Brightness Boost."
+          }
+        }
+      }
+    },
+    "Notification.Conflict.DeskMode.Body" : {
+      "comment" : "Notification body. \"It\" is another display app (named in the title, e.g. BetterDisplay) that can switch the MacBook's own screen back on while Desk Mode (turns the MacBook's own screen off) has it off.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "It can turn your built-in screen back on. Quit it while you use Desk Mode."
+          }
+        }
+      }
+    },
+    "Notification.Conflict.External.Body" : {
+      "comment" : "Notification body. \"It\" is another display app (named in the title, e.g. MonitorControl) that also changes the brightness of external monitors; \"the two\" are that app and Lidless.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "It also sets your external displays' brightness, so the two can fight. Quit it while Lidless dims them."
+          }
+        }
+      }
+    },
+    "Notification.Conflict.Title" : {
+      "comment" : "Notification title when another display app that fights Lidless is open. The placeholder is that app's name, e.g. \"BetterDisplay\".",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%@ is also running"
+          }
+        }
+      }
+    },
+    "Notification.EngageFailed.Body" : {
+      "comment" : "Notification body when turning the MacBook's own screen off failed or could not be confirmed, so Lidless left it on.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Lidless couldn't turn the built-in screen off, so it left it on."
+          }
+        }
+      }
+    },
+    "Notification.EngageFailed.Title" : {
+      "comment" : "Notification title when Desk Mode (turns the MacBook's own screen off while external displays are connected) failed to start.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Desk Mode didn't turn on"
+          }
+        }
+      }
+    },
+    "Notification.ModeSwitch.Body" : {
+      "comment" : "Notification body, shown once. macOS remembers separate display settings for \"external screen alone\" and \"MacBook + external screen\"; when they differ, switching makes the external monitor resync (go dark briefly). \"Built-in screen\" is the MacBook's own display.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "macOS gives that screen different settings when the built-in screen is off, so it resyncs. Give it the same resolution in both setups to stop the blink."
+          }
+        }
+      }
+    },
+    "Notification.ModeSwitch.Title" : {
+      "comment" : "Notification title, shown once: when Desk Mode turned the MacBook's own screen off or on, the external monitor went dark for a moment.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Why your other screen blinked"
+          }
+        }
+      }
+    },
+    "Notification.Recovered.Body" : {
+      "comment" : "Notification body at launch, after Lidless restored the built-in screen that a crashed run had left off (Desk Mode turns the MacBook's own screen off). \"Built-in screen\" is the MacBook's own display.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Lidless quit unexpectedly. Your built-in screen was turned back on."
+          }
+        }
+      }
+    },
+    "Notification.Restored.ExternalLost.Body" : {
+      "comment" : "Notification body after the last external display went away and Lidless turned the MacBook's own screen back on.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Your last external display was unplugged, so Lidless switched your built-in screen back on."
+          }
+        }
+      }
+    },
+    "Notification.Restored.SessionChanged.Body" : {
+      "comment" : "Notification body after the screen was locked or another user account took over the Mac (fast user switching), so Lidless turned the MacBook's own screen back on.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Your Mac was locked or switched to another user, so Lidless switched your built-in screen back on."
+          }
+        }
+      }
+    },
+    "Notification.Restored.Sleep.Body" : {
+      "comment" : "Notification body, shown after wake: the Mac slept while Desk Mode had the MacBook's own screen off, so Lidless turned that screen back on.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Your Mac went to sleep, so Lidless switched your built-in screen back on."
+          }
+        }
+      }
+    },
+    "Notification.Restored.TimeLimit.Body" : {
+      "comment" : "Only in development (Debug) builds with a test time limit turned on, never in released versions: Desk Mode ended after that time limit and the MacBook's own screen came back on. Low priority.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Desk Mode reached the test time limit set for this build, so Lidless switched your built-in screen back on."
+          }
+        }
+      }
+    },
+    "Notification.Restored.TimedOut.Body" : {
+      "comment" : "Notification body after nobody answered the \"keep the built-in screen off?\" prompt in time, so the MacBook's own screen came back on by itself.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Nobody answered, so your built-in screen came back on."
+          }
+        }
+      }
+    },
+    "Notification.Restored.Title" : {
+      "comment" : "Notification title after Lidless switched the MacBook's own screen back on (Desk Mode had turned it off to run cooler with external displays).",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Built-in display turned back on"
+          }
+        }
+      }
+    },
+    "ONE LAST THING" : {
+      "comment" : "Overline above the onboarding panic key title; uppercase on purpose"
+    },
+    "Off" : {
+      "comment" : "Value of the “Boost” setting in the “Set Brightness Boost” Shortcuts action, and the word Siri listens for in “Turn Brightness Boost off”: Boost switched off"
+    },
     "Off while Desk Mode is on. Bring it back:" : {
       "comment" : "Built-in display card text while Desk Mode is on, followed by the panic shortcut"
+    },
+    "On" : {
+      "comment" : "Value of the “Boost” setting in the “Set Brightness Boost” Shortcuts action, and the word Siri listens for in “Turn Brightness Boost on”: Boost switched on"
     },
     "On battery" : {
       "comment" : "Popover status line segment when the charge is unknown"
@@ -207,6 +1099,21 @@
     "On power" : {
       "comment" : "Popover status line segment"
     },
+    "One shortcut that always brings your screen back." : {
+      "comment" : "Title of the panic key hero in Settings › Keys & App"
+    },
+    "Only when my Mac is plugged in" : {
+      "comment" : "Settings Desk Mode rule option"
+    },
+    "Open Displays settings" : {
+      "comment" : "Link in the auto-brightness note in Settings › Brightness: opens System Settings › Displays"
+    },
+    "Open Input Monitoring settings" : {
+      "comment" : "Link in Settings › Brightness that opens System Settings › Privacy & Security › Input Monitoring"
+    },
+    "Open Login Items" : {
+      "comment" : "Link that opens System Settings › General › Login Items"
+    },
     "Open Settings" : {
       "comment" : "VoiceOver label of the popover's settings button"
     },
@@ -216,26 +1123,107 @@
     "Option" : {
       "comment" : "Spoken name of the Option key"
     },
+    "PANIC KEY" : {
+      "comment" : "Overline of the panic key hero in Settings › Keys & App"
+    },
+    "Panic key" : {
+      "comment" : "Accessibility label of the panic key hero in Settings › Keys & App\nName of the shortcut that always brings the built-in screen back\nSafety net item 3 title"
+    },
+    "Panic key, anytime" : {
+      "comment" : "Keep-or-revert prompt footer, followed by the panic shortcut's keys"
+    },
     "Paste" : {
-      "comment" : "Edit menu item"
+      "comment" : "Edit menu item that pastes from the clipboard (a command, the standard macOS menu item: use the system's usual translation)"
+    },
+    "Pause at this heat level" : {
+      "comment" : "Guard rail helper in Settings › Brightness, beside the heat level menu"
+    },
+    "Pause when below" : {
+      "comment" : "Guard rail helper in Settings › Brightness, beside the battery level menu"
+    },
+    "Paused while displays change." : {
+      "comment" : "Popover Boost callout: Boost is paused for a few seconds while a display is connected, disconnected or rearranged"
+    },
+    "Paused while the built-in screen is off." : {
+      "comment" : "Popover Boost callout: Boost is paused because the lid is closed or the built-in screen is switched off"
+    },
+    "Paused while the screen sleeps." : {
+      "comment" : "Popover Boost callout: Boost is paused while the displays sleep or the screen is locked"
+    },
+    "Paused: Low Power Mode is on." : {
+      "comment" : "Popover Boost callout: Boost is paused while macOS Low Power Mode is on. “Low Power Mode” is the macOS feature name; use Apple’s translation."
+    },
+    "Paused: battery is low." : {
+      "comment" : "Popover Boost callout: Boost stepped back because the battery fell below the level set in Settings; it comes back by itself when charging"
+    },
+    "Paused: your Mac is hot." : {
+      "comment" : "Popover Boost callout: Boost stepped back because the Mac reached the heat level set in Settings; it comes back by itself when the Mac cools down"
     },
     "Plug in a monitor and Lidless can turn this screen off." : {
       "comment" : "Desk Mode card description when no external display is connected"
+    },
+    "Preferences…" : {
+      "comment" : "App menu item that opens the Settings window, on macOS 12 (which calls settings Preferences)\nPopover footer button that opens the Preferences window (macOS 12 name for Settings)"
+    },
+    "Press keys…" : {
+      "comment" : "Shortcut recorder while it waits for the new keys"
+    },
+    "Press the Keys…" : {
+      "comment" : "The Try It button while it waits for the panic key; clicking again stops"
+    },
+    "Press the new keys. Escape cancels, Delete removes the shortcut." : {
+      "comment" : "VoiceOver: how to use a shortcut recorder whose shortcut can be removed"
+    },
+    "Press the new keys. Escape cancels." : {
+      "comment" : "VoiceOver: how to use the panic key's recorder, which can't be removed"
+    },
+    "Press the panic key now. Click again to stop." : {
+      "comment" : "VoiceOver hint of the Try It button while it waits"
+    },
+    "Quick keys" : {
+      "comment" : "Card title in Settings › Keys & App"
     },
     "Quit" : {
       "comment" : "Popover footer button that quits Lidless"
     },
     "Quit Lidless" : {
-      "comment" : "App menu item"
+      "comment" : "App menu item that quits Lidless (standard macOS menu item; Lidless is the app name)"
     },
     "Redo" : {
-      "comment" : "Edit menu item"
+      "comment" : "Edit menu item that redoes the last undone change (a command, the standard macOS menu item: use the system's usual translation)"
+    },
+    "Returns whether Desk Mode is on, which means the built-in screen is off." : {
+      "comment" : "Description of the “Get Desk Mode State” action in the Shortcuts app; the action outputs true or false"
+    },
+    "Safety net" : {
+      "comment" : "Onboarding feature card title\nSettings Desk Mode card title"
+    },
+    "Screen Back On" : {
+      "comment" : "Short name of the App Shortcut that brings the built-in screen back like the panic key, on its tile in Spotlight and the Shortcuts app; keep it short"
+    },
+    "Screen goes dark, windows stay put. Quicker to switch back." : {
+      "comment" : "Description of the Black out method"
+    },
+    "Screen off, lid open. Your Mac runs cooler at a desk." : {
+      "comment" : "Onboarding Desk Mode card description"
+    },
+    "Screen sleeps" : {
+      "comment" : "Guard rail title in Settings › Brightness"
     },
     "Select All" : {
-      "comment" : "Edit menu item"
+      "comment" : "Edit menu item that selects everything in the field (a command, the standard macOS menu item: use the system's usual translation)"
+    },
+    "Serious" : {
+      "comment" : "Heat level option in Settings › Brightness › Guard rails"
+    },
+    "Set Brightness Boost" : {
+      "comment" : "Name of the Shortcuts/Siri action that turns Brightness Boost (Lidless’s extra-brightness feature for the built-in screen) on or off"
     },
     "Settings" : {
       "comment" : "Tooltip of the popover's settings button"
+    },
+    "Settings sections" : {
+      "comment" : "VoiceOver label of the tab switcher at the top of the Settings window"
     },
     "Settings…" : {
       "comment" : "App menu item that opens the Settings window\nPopover footer button that opens the Settings window"
@@ -243,8 +1231,64 @@
     "Shift" : {
       "comment" : "Spoken name of the Shift key"
     },
+    "Shortcut removed." : {
+      "comment" : "VoiceOver announcement after Delete removed a shortcut in the recorder"
+    },
+    "Shortcut set to %@." : {
+      "comment" : "VoiceOver announcement after recording a shortcut. The variable is the spoken keys, e.g. “Control Option Command K”"
+    },
+    "Small highlights only" : {
+      "comment" : "Label at the 1,600 nit end of the Boost ceiling slider"
+    },
+    "Start Lidless when I log in" : {
+      "comment" : "Switch that registers Lidless as a login item\nToggle in Settings › Keys & App › Menu bar"
+    },
+    "Start Using Lidless" : {
+      "comment" : "Onboarding's last button: closes onboarding and opens the menu bar popover"
+    },
+    "Step %lld of %lld" : {
+      "comment" : "VoiceOver label of the onboarding page dots, e.g. \"Step 1 of 2\"",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Step %1$lld of %2$lld"
+          }
+        }
+      }
+    },
+    "Stopped waiting for the panic key." : {
+      "comment" : "VoiceOver announcement when Try It gives up after 15 seconds without the panic key"
+    },
+    "Test the safety net" : {
+      "comment" : "Settings Safety net button: turns Desk Mode on with the keep-or-revert prompt"
+    },
+    "The brightness key needs Input Monitoring." : {
+      "comment" : "Note in Settings › Brightness when Keep pressing to boost is on but Lidless may not see key presses (Input Monitoring not allowed)"
+    },
+    "The built-in screen is already on." : {
+      "comment" : "Shortcuts/Siri reply after “Turn the Built-in Display Back On” when Desk Mode wasn't on"
+    },
+    "The built-in screen is back on." : {
+      "comment" : "Shortcuts/Siri reply after “Turn the Built-in Display Back On” brought the screen back"
+    },
+    "The built-in screen is still coming back. Try again in a moment." : {
+      "comment" : "Shortcuts/Siri error: Desk Mode was asked to turn on while the built-in screen is being turned back on"
+    },
     "The built-in screen is switching off." : {
       "comment" : "Desk Mode card description while turning on"
+    },
+    "The lid is closed" : {
+      "comment" : "Settings Desk Mode hero title when the MacBook lid is closed"
+    },
+    "The lid is closed. Open it and Lidless can turn the built-in screen off." : {
+      "comment" : "Shortcuts/Siri error when turning Desk Mode on with the MacBook lid closed"
+    },
+    "The panic key already uses these keys." : {
+      "comment" : "Shortcut recorder: the keys pressed are the panic key's"
+    },
+    "The panic key can be changed, never removed." : {
+      "comment" : "Shortcut recorder: Delete was pressed while recording the panic key"
     },
     "Thermals: Critical" : {
       "comment" : "Popover footer heat status"
@@ -258,14 +1302,56 @@
     "Thermals: Serious" : {
       "comment" : "Popover footer heat status"
     },
+    "These keys aren't working right now. Pick new ones with Change Keys." : {
+      "comment" : "Note under the panic key buttons in Settings › Keys & App when the panic key couldn't be registered at all. “Change Keys” is the button beside it."
+    },
     "They'll show up here when you plug one in." : {
       "comment" : "Empty state message in the popover's external displays section"
     },
     "This Mac can't bring its screen back reliably, so Lidless leaves it on." : {
-      "comment" : "Desk Mode card description on unsupported Macs"
+      "comment" : "Desk Mode card description on unsupported Macs\nShortcuts/Siri error when turning Desk Mode on, on a Mac that can't use Desk Mode (same text as the popover)"
+    },
+    "This display doesn't take brightness commands, so Lidless darkens its picture instead." : {
+      "comment" : "Tooltip on an external display row whose brightness Lidless changes with a dark overlay, because the monitor ignores DDC brightness commands"
+    },
+    "This screen can't boost right now." : {
+      "comment" : "Popover Boost callout: the built-in screen has no extra brightness to give, for example because a fixed reference preset is selected in System Settings › Displays\nShortcuts/Siri error: the built-in screen has no extra brightness to give, for example because a fixed reference preset is selected in System Settings › Displays (same text as the popover)"
     },
     "This version of macOS can't turn the screen off safely." : {
-      "comment" : "Desk Mode card description on unsupported macOS versions"
+      "comment" : "Desk Mode card description on unsupported macOS versions\nShortcuts/Siri error when turning Desk Mode on, on a macOS version that can't use Desk Mode (same text as the popover)"
+    },
+    "Three ways your screen always comes back." : {
+      "comment" : "Settings Safety net card description"
+    },
+    "Toggle Desk Mode" : {
+      "comment" : "Name of the Shortcuts/Siri action that turns Desk Mode on if it is off, and off if it is on\nShort name of the App Shortcut that switches Desk Mode on or off, on its tile in Spotlight and the Shortcuts app; keep it short"
+    },
+    "Try It" : {
+      "comment" : "Button in the panic key hero: waits for the panic key without turning anything off"
+    },
+    "Try it now. We'll show a check mark when it works." : {
+      "comment" : "Onboarding status under the panic keycaps while waiting for the user to press the panic key"
+    },
+    "Turn Back On" : {
+      "comment" : "Keep-or-revert prompt button that turns the built-in screen back on now"
+    },
+    "Turn Brightness Boost ${isOn}" : {
+      "comment" : "Summary of the “Set Brightness Boost” action in the Shortcuts editor. ${isOn} becomes a tappable “On” or “Off” (the Boost parameter); keep it. “Brightness Boost” is Lidless’s extra-brightness feature."
+    },
+    "Turn Desk Mode Off" : {
+      "comment" : "Name of the Shortcuts/Siri action that turns Desk Mode off (the built-in screen comes back)"
+    },
+    "Turn Desk Mode On" : {
+      "comment" : "Name of the Shortcuts/Siri action that turns Desk Mode on (the built-in screen goes off, external displays stay on)"
+    },
+    "Turn Desk Mode off first." : {
+      "comment" : "Tooltip and VoiceOver hint of Test the safety net while Desk Mode is on or switching"
+    },
+    "Turn on Desk Mode when I plug in a display" : {
+      "comment" : "Onboarding switch: the rule that turns the built-in screen off when an external display is plugged in"
+    },
+    "Turn the Built-in Display Back On" : {
+      "comment" : "Name of the Shortcuts/Siri action that works like the panic key: brings the MacBook’s own screen back right away"
     },
     "Turn the built-in screen off. The lid stays open for cooling." : {
       "comment" : "Desk Mode card description when off"
@@ -281,20 +1367,130 @@
         }
       }
     },
+    "Turning Desk Mode off…" : {
+      "comment" : "Settings Desk Mode hero title while the built-in screen comes back"
+    },
+    "Turning Desk Mode on…" : {
+      "comment" : "Settings Desk Mode hero title while the built-in screen switches off"
+    },
     "Turning off…" : {
       "comment" : "Desk Mode card title while the built-in screen comes back"
     },
     "Turning on…" : {
       "comment" : "Desk Mode card title while the built-in screen switches off"
     },
+    "Turns Brightness Boost on or off for the built-in screen. On goes back to your last Boost level, or the ceiling set in Lidless Settings." : {
+      "comment" : "Description of the “Set Brightness Boost” action in the Shortcuts app. “Brightness Boost” and “Boost” are Lidless’s feature name; the ceiling is the brightest level Boost may reach."
+    },
+    "Turns Desk Mode on if it's off, and off if it's on. Returns whether Desk Mode is now on." : {
+      "comment" : "Description of the “Toggle Desk Mode” action in the Shortcuts app; the action outputs true or false"
+    },
+    "Turns back on in ^[%lld second](inflect: true)." : {
+      "comment" : "VoiceOver announcement while the keep-or-revert prompt counts down. The variable is the whole seconds left before the built-in screen turns back on; ^[…](inflect: true) makes the noun agree with the number.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "new",
+                  "value" : "Turns back on in %lld second."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "new",
+                  "value" : "Turns back on in %lld seconds."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Turns the built-in screen back on." : {
+      "comment" : "Description of the “Turn Desk Mode Off” action in the Shortcuts app"
+    },
+    "Turns the built-in screen off while your external displays stay on. The lid stays open for cooling." : {
+      "comment" : "Description of the “Turn Desk Mode On” action in the Shortcuts app"
+    },
+    "Turns the built-in screen off, then asks whether to keep it off." : {
+      "comment" : "VoiceOver hint of the Test the safety net button"
+    },
     "Undo" : {
-      "comment" : "Edit menu item"
+      "comment" : "Edit menu item that undoes the last change (a command, the standard macOS menu item: use the system's usual translation)"
+    },
+    "Unplug everything, it comes back" : {
+      "comment" : "Safety net item 1 title"
+    },
+    "Unplug your displays and the built-in screen comes right back." : {
+      "comment" : "Onboarding Safety net card description"
+    },
+    "Wake up at 100 percent" : {
+      "comment" : "Accessibility label of the switch that ends Boost when the screen sleeps"
+    },
+    "Wake up at 100%, not boosted" : {
+      "comment" : "Guard rail helper in Settings › Brightness: after the screen sleeps, brightness comes back at 100% instead of boosted"
+    },
+    "Welcome to Lidless" : {
+      "comment" : "Onboarding step 1 title\nTitle of the onboarding window (hidden; read by VoiceOver and shown in the Window menu)"
     },
     "Window" : {
-      "comment" : "Main menu title"
+      "comment" : "Title of the Window menu in the menu bar (the standard macOS menu: use the system's usual translation)"
+    },
+    "Windows move to your other screen. Coolest and lightest on the GPU." : {
+      "comment" : "Description of the Disconnect method"
+    },
+    "Works even if Lidless is busy. You can change the keys, never remove them." : {
+      "comment" : "Body of the panic key hero in Settings › Keys & App"
+    },
+    "Your built-in screen is off." : {
+      "comment" : "Settings Desk Mode hero text when on and the built-in is still the main display"
+    },
+    "Your built-in screen is off. %@ is now your main display." : {
+      "comment" : "Settings Desk Mode hero text when on; the variable is the external display's name"
+    },
+    "Your built-in screen is on. Flip the switch to turn it off and let the Mac run cooler." : {
+      "comment" : "Settings Desk Mode hero text when off"
+    },
+    "Your rule" : {
+      "comment" : "Settings Desk Mode card title"
+    },
+    "Your screens" : {
+      "comment" : "Card title in Settings › Brightness"
+    },
+    "back" : {
+      "comment" : "Caption under the panic key's letter key: pressing it brings the screen back\nCaption under the panic key's letter keycap in onboarding: the key that brings the screen back. Lowercase like the other captions."
+    },
+    "command" : {
+      "comment" : "Caption under the Command keycap\nCaption under the Command keycap in onboarding; lowercase as printed on Apple keyboards"
+    },
+    "control" : {
+      "comment" : "Caption under the Control keycap\nCaption under the Control keycap in onboarding; lowercase as printed on Apple keyboards"
+    },
+    "macOS already uses these keys." : {
+      "comment" : "Shortcut recorder: the keys pressed are a system shortcut such as Command-Q"
+    },
+    "macOS isn't allowing Boost right now." : {
+      "comment" : "Popover Boost callout when macOS gave the screen no extra brightness after several tries; Boost tries again the next time the slider moves into Boost"
+    },
+    "nits max" : {
+      "comment" : "Unit after the big Boost ceiling number in Settings › Brightness"
+    },
+    "option" : {
+      "comment" : "Caption under the Option keycap\nCaption under the Option keycap in onboarding; lowercase as printed on Apple keyboards"
     },
     "or press brightness down" : {
       "comment" : "Hint to the right of the “Back to 100%” button that finishes the sentence “[Back to 100%] or press brightness down”, so it starts in lowercase. If your language can’t continue the button’s label this way, translate it as a phrase that stands alone, such as “Or press the brightness-down key.” “brightness down” is the keyboard key that dims the screen (F1)."
+    },
+    "shift" : {
+      "comment" : "Caption under the Shift keycap\nCaption under the Shift keycap in onboarding; lowercase as printed on Apple keyboards"
+    },
+    "· up to %@ brightness" : {
+      "comment" : "After the Boost ceiling in Settings › Brightness: the brightest Boost gets, as a percentage of normal maximum, e.g. · up to 167% brightness"
+    },
+    "≈ %@" : {
+      "comment" : "The Boost ceiling in nits, big in the Settings › Brightness hero, e.g. ≈ 1,000"
     },
     "≈ %@ nits" : {
       "comment" : "Hint under the built-in brightness slider when Boost is off; the variable is the estimated brightness in nits"

@@ -4,10 +4,15 @@ import SwiftUI
 struct StatusChip: View {
     let label: Text
     let dotColor: Color
+    /// The dot's shape with Differentiate Without Colour, so the level doesn't
+    /// rest on its colour alone; a circle otherwise, as designed.
+    var dotShape: StatusDot.Kind = .circle
+
+    @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
 
     var body: some View {
         HStack(spacing: 6) {
-            Circle()
+            StatusDot(kind: differentiateWithoutColor ? dotShape : .circle)
                 .fill(dotColor)
                 .frame(width: 8, height: 8)
                 .accessibilityHidden(true)
@@ -29,6 +34,43 @@ struct StatusChip: View {
                 }
         }
         .accessibilityElement(children: .combine)
+    }
+}
+
+/// A status chip's dot. Circle as designed; the other kinds stand in for it
+/// with Differentiate Without Colour (not designed).
+struct StatusDot: Shape {
+    enum Kind {
+        case circle
+        case diamond
+        case triangle
+        case square
+    }
+
+    var kind: Kind
+
+    nonisolated func path(in rect: CGRect) -> Path {
+        switch kind {
+        case .circle:
+            return Circle().path(in: rect)
+        case .diamond:
+            return Path { p in
+                p.move(to: CGPoint(x: rect.midX, y: rect.minY))
+                p.addLine(to: CGPoint(x: rect.maxX, y: rect.midY))
+                p.addLine(to: CGPoint(x: rect.midX, y: rect.maxY))
+                p.addLine(to: CGPoint(x: rect.minX, y: rect.midY))
+                p.closeSubpath()
+            }
+        case .triangle:
+            return Path { p in
+                p.move(to: CGPoint(x: rect.midX, y: rect.minY))
+                p.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+                p.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+                p.closeSubpath()
+            }
+        case .square:
+            return RoundedRectangle(cornerRadius: 1.5, style: .circular).path(in: rect.insetBy(dx: 0.5, dy: 0.5))
+        }
     }
 }
 

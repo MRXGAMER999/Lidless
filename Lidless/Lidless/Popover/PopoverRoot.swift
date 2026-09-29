@@ -12,7 +12,8 @@ import SwiftUI
 ///   The window follows this view's ideal size.
 /// - Material: drawn here on macOS 26+ (a blur material under Liquid Glass);
 ///   on 12–25 AppKit puts a `.popover` material behind the panel rect and this
-///   view adds the wash.
+///   view adds the wash. With Reduce Transparency this view draws an opaque
+///   fill instead, on every version.
 struct PopoverRoot: View {
     let model: AppModel
     let actions: PopoverActions
@@ -67,13 +68,19 @@ private struct PopoverChrome: ViewModifier {
     }
 }
 
-/// The design's `backdrop-filter: blur(40px) saturate(170%)` under a wash.
+/// The design's `backdrop-filter: blur(40px) saturate(170%)` under a wash, or
+/// an opaque fill with Reduce Transparency.
 private struct PopoverMaterial: View {
     let shape: RoundedRectangle
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
     var body: some View {
-        if #available(macOS 26, *) {
+        if reduceTransparency {
+            // Covers the AppKit material on 12–25 too (which turns opaque by
+            // itself), so the panel looks the same on every version.
+            shape.fill(Palette.popoverSolid)
+        } else if #available(macOS 26, *) {
             ZStack {
                 // Liquid Glass alone blurs far less than the design, so blob
                 // edges showed through. This material (blur 60, saturate 160%)

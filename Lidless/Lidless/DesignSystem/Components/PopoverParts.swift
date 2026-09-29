@@ -5,6 +5,9 @@ import SwiftUI
 struct Callout: View {
     let glyph: LidlessGlyph
     let message: Text
+    /// What VoiceOver reads instead of `message`, when the message leans on
+    /// symbols such as "≈" or "·". Nil reads the message.
+    var accessibilityMessage: Text? = nil
 
     var body: some View {
         HStack(alignment: .top, spacing: 8) {
@@ -23,7 +26,8 @@ struct Callout: View {
             RoundedRectangle(cornerRadius: Radius.tile, style: .circular)
                 .fill(Palette.calloutFill)
         }
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(accessibilityMessage ?? message)
     }
 }
 

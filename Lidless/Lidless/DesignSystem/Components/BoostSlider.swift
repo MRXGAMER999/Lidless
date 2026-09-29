@@ -19,6 +19,8 @@ struct BoostSlider: View {
     /// Arrow keys move this many positions (about 3% of the track).
     private let keyboardStep = 5.0
 
+    @Environment(\.locale) private var locale
+
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 10) {
@@ -44,16 +46,18 @@ struct BoostSlider: View {
         }
         .accessibilityRepresentation {
             // Without a step VoiceOver moves 10% of the travel (15), which can jump past the Boost line.
+            // 5 positions are 5% below the line, which a step lands on exactly.
             Slider(value: $position, in: scale.travel, step: keyboardStep, label: { label })
-                .accessibilityValue(accessibilityValue)
+                .accessibilityValue(Text(verbatim: BrightnessAccessibility.sliderValue(position: position, scale: scale, locale: locale)))
+                .accessibilityHint(accessibilityHint)
         }
     }
 
-    private var accessibilityValue: Text {
-        let percent = scale.displayPercent(position)
-        return scale.isBoosted(position)
-            ? Text("\(percent, format: .percent), Boost", comment: "VoiceOver value of the built-in brightness slider while boosted, e.g. \"160%, Boost\"")
-            : Text(percent, format: .percent)
+    /// Where Boost starts, which the track shows only by its line and colour.
+    private var accessibilityHint: Text {
+        scale.canBoost
+            ? Text("Above 100%, Boost makes the screen brighter than normal.", comment: "VoiceOver hint of the built-in brightness slider when Boost can be used")
+            : Text(verbatim: "")
     }
 }
 
@@ -150,10 +154,20 @@ private struct BoostThumb: View {
     static let size = CGSize(width: 30, height: 20)
     let isBoosted: Bool
 
+    @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
+
     var body: some View {
         let shape = RoundedRectangle(cornerRadius: 10, style: .circular)
         shape.fill(Palette.white)
             .overlay { shape.strokeBorder(isBoosted ? Palette.gold : Palette.thumbRing, lineWidth: 2) }
+            // With Differentiate Without Colour a boosted thumb also shows a
+            // flame, since its ring only turns gold. Not designed.
+            .overlay {
+                if differentiateWithoutColor && isBoosted {
+                    GlyphView(glyph: .flame, size: 12, lineWidth: 2.2)
+                        .foregroundStyle(Palette.goldDeepFixed)
+                }
+            }
             .frame(width: Self.size.width, height: Self.size.height)
             // One shadow for the whole thumb; otherwise the ring also shadows the white face.
             .compositingGroup()

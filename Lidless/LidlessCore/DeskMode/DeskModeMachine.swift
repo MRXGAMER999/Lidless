@@ -133,6 +133,12 @@ public struct DeskModeMachine: Sendable, Equatable {
         /// reading or tick, before it counts as the external lost. One reading taken
         /// mid-reconfiguration can miss a display that is still there.
         public var lossConfirmTime: TimeInterval
+        /// After the screens wake (display sleep or system sleep), an external
+        /// missing from the list gets this long to come back before it counts as
+        /// lost. A monitor leaving standby can take a few seconds to resync its
+        /// signal and reappear (HDMI drops out of the list while it does); a real
+        /// unplug found at wake still restores, this much later.
+        public var screenWakeGrace: TimeInterval
         /// After wake, wait this long for a stable reading before deciding.
         public var wakeSettleTime: TimeInterval
         /// Retry a failed enable this often, forever (while the lid is open and the panel is known).
@@ -150,6 +156,7 @@ public struct DeskModeMachine: Sendable, Equatable {
             engageTimeout: TimeInterval = 12,
             settleTime: TimeInterval = 2,
             lossConfirmTime: TimeInterval = 1,
+            screenWakeGrace: TimeInterval = 6,
             wakeSettleTime: TimeInterval = 2,
             restoreRetryInterval: TimeInterval = 1,
             failureLatch: TimeInterval = 300,
@@ -163,6 +170,7 @@ public struct DeskModeMachine: Sendable, Equatable {
             self.engageTimeout = engageTimeout
             self.settleTime = settleTime
             self.lossConfirmTime = lossConfirmTime
+            self.screenWakeGrace = screenWakeGrace
             self.wakeSettleTime = wakeSettleTime
             self.restoreRetryInterval = restoreRetryInterval
             self.failureLatch = failureLatch
@@ -226,6 +234,9 @@ public struct DeskModeMachine: Sendable, Equatable {
     /// The first trusted reading with no present external, while confirming or active.
     /// The loss counts once it holds for `lossConfirmTime`.
     private var lossSince: TimeInterval?
+    /// When the screens last woke (the first awake reading after an asleep one,
+    /// or `didWake`). Loss waits `screenWakeGrace` from here.
+    private var screensWokeAt: TimeInterval?
 
     public init(configuration: Configuration = .init(), snapshot: DeskModeSnapshot = .init(), availability: DeskModeState.UnavailableReason? = nil) {
         self.configuration = configuration
@@ -314,6 +325,7 @@ public struct DeskModeMachine: Sendable, Equatable {
     }
 
     private mutating func receive(_ snapshot: DeskModeSnapshot, now: TimeInterval) -> [DeskModeCommand] {
+        if self.snapshot.screensAsleep && !snapshot.screensAsleep { screensWokeAt = now }
         self.snapshot = snapshot
         if let name = snapshot.presentExternals.first?.name { lastExternalName = name }
         // Black out never takes the panel out of the list, so only the enable's answer counts there.
@@ -445,6 +457,8 @@ public struct DeskModeMachine: Sendable, Equatable {
         sleeping = false
         wakeSettleUntil = now + configuration.wakeSettleTime
         lossSince = nil
+        // The displays wake with the Mac, and their readings may lag behind.
+        screensWokeAt = now
         // Covers a missed willSleep.
         switch phase {
         case .confirming: restoreAfterWake = true
@@ -539,6 +553,9 @@ public struct DeskModeMachine: Sendable, Equatable {
             let since = lossSince ?? now
             lossSince = since
             guard now - since >= configuration.lossConfirmTime else { return [] }
+            // A monitor coming out of standby may still be resyncing: give it
+            // the grace before calling it unplugged.
+            if let woke = screensWokeAt, now < woke + configuration.screenWakeGrace { return [] }
             return restore(.externalLost(displayName: lastExternalName), now: now)
         }
         lossSince = nil

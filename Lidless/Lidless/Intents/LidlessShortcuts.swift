@@ -6,9 +6,11 @@ import Foundation
 /// system drops it. Phrases are a contract with the user's muscle memory:
 /// add new ones, don't rename shipped ones. At most 10 App Shortcuts.
 ///
-/// Phrases are extracted into their own catalog, `AppShortcuts.xcstrings`
-/// (not `Localizable.xcstrings`); localized phrases need that file. Short
-/// titles are ordinary metadata strings with translator comments.
+/// Phrases are localized in their own table, `en.lproj/AppShortcuts.strings`
+/// (not `Localizable.xcstrings`), where their translator comments live: a
+/// phrase literal can't carry one. `AppShortcuts.xcstrings` needs a macOS 14
+/// deployment target. Change a phrase here and there together; the build checks
+/// the keys. Short titles are ordinary metadata strings with translator comments.
 @available(macOS 13, *)
 nonisolated struct LidlessShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {

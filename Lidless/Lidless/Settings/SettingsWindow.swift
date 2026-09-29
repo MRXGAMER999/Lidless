@@ -12,6 +12,8 @@ final class SettingsWindow: NSWindow {
     static let contentSize = NSSize(width: 880, height: 720)
     static let titleRowHeight: CGFloat = 56
     private static let autosaveName = "LidlessSettingsWindow"
+    /// A title-bar button layout is waiting for the run loop (`windowButtonsNeedLayout`).
+    private var buttonsLayoutQueued = false
 
     init(navigation: SettingsNavigation, model: AppModel, actions: SettingsActions, launchAtLogin: any LaunchAtLogin) {
         super.init(
@@ -100,7 +102,20 @@ final class SettingsWindow: NSWindow {
     }
 
     @objc private func windowButtonsNeedLayout(_ notification: Notification) {
-        layOutWindowButtons()
+        guard notification.name == NSView.frameDidChangeNotification else {
+            layOutWindowButtons()
+            return
+        }
+        // A button or its container moved inside AppKit's own title-bar layout
+        // pass: moving them again from there can recurse. Lay out once, after it.
+        guard !buttonsLayoutQueued else { return }
+        buttonsLayoutQueued = true
+        RunLoop.main.perform(inModes: [.common]) { [weak self] in
+            MainActor.assumeIsolated {
+                self?.buttonsLayoutQueued = false
+                self?.layOutWindowButtons()
+            }
+        }
     }
 }
 
@@ -126,9 +141,10 @@ struct SettingsRootView: View {
         // The board's 1 pt window border: content 878×718, cards 842 wide.
         .padding(Spacing.hairline)
         .frame(width: SettingsWindow.contentSize.width, height: SettingsWindow.contentSize.height)
-        .background(SettingsWindowBackground())
+        .background(SettingsBackdrop())
         // The content reaches under the (transparent) title bar.
         .ignoresSafeArea()
+        .settingsAccessibilityOptions()
     }
 
     @ViewBuilder private var tabContent: some View {
@@ -152,8 +168,12 @@ private struct SettingsTitleRow: View {
         HStack(spacing: 0) {
             Color.clear.frame(width: 90, height: 1)
             Spacer(minLength: 0)
-            // Labelled "Settings sections" by SegmentedNav itself.
+            // Labelled "Settings sections" by SegmentedNav itself, which reads
+            // as one control with the selected tab and its position.
             SegmentedNav(selection: $selection, tabs: SettingsTab.allCases, title: \.title, glyph: \.glyph)
+                .modifier(TabBarTrait())
+                // Increase Contrast: the grey track gets an edge.
+                .overlay { IncreasedContrastRing(shape: Capsule()) }
             Spacer(minLength: 0)
             Image(.appIconArt)
                 .resizable()
@@ -166,6 +186,18 @@ private struct SettingsTitleRow: View {
         // The title bar is transparent and covered by content: this keeps the
         // row's empty space working as one.
         .background(WindowDragArea())
+    }
+}
+
+/// Announces the section switcher as a tab group (macOS 14 and later; before
+/// that it stays a segmented control, which reads the same apart from the role).
+private struct TabBarTrait: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(macOS 14, *) {
+            content.accessibilityAddTraits(.isTabBar)
+        } else {
+            content
+        }
     }
 }
 

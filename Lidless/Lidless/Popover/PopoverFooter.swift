@@ -33,7 +33,7 @@ private struct ThermalStatusChip: View {
     @ObservedObject var system: SystemStore
 
     var body: some View {
-        StatusChip(label: label, dotColor: dotColor)
+        StatusChip(label: label, dotColor: dotColor, dotShape: dotShape)
     }
 
     private var label: Text {
@@ -42,6 +42,16 @@ private struct ThermalStatusChip: View {
         case .fair: Text("Thermals: Fair", comment: "Popover footer heat status")
         case .serious: Text("Thermals: Serious", comment: "Popover footer heat status")
         case .critical: Text("Thermals: Critical", comment: "Popover footer heat status")
+        }
+    }
+
+    /// Rising alarm without colour: circle, diamond, triangle, square.
+    private var dotShape: StatusDot.Kind {
+        switch system.thermal {
+        case .nominal: .circle
+        case .fair: .diamond
+        case .serious: .triangle
+        case .critical: .square
         }
     }
 

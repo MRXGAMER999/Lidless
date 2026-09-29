@@ -38,6 +38,7 @@ final class StatusItemController: NSObject, NSWindowDelegate {
     private var workspaceObservers: [NSObjectProtocol] = []
     private var menuBarLocked = false
     private var fadeGeneration = 0
+    private var repositionQueued = false
     private let log = Logger(subsystem: "io.github.mrxgamer999.Lidless", category: "StatusItem")
 
     /// - Parameter iconShowsState: Settings › "Icon shows what's on".
@@ -57,6 +58,12 @@ final class StatusItemController: NSObject, NSWindowDelegate {
         for orientation in [NSLayoutConstraint.Orientation.horizontal, .vertical] {
             hostingView.setContentHuggingPriority(.defaultLow, for: orientation)
             hostingView.setContentCompressionResistancePriority(.defaultLow, for: orientation)
+        }
+        if #available(macOS 13, *) {
+            // Only the ideal size is read (`measuredWindowSize`); the root's
+            // min and max are 0 and infinity, so their constraints only add
+            // churn to each size change. macOS 12 keeps the standard set.
+            hostingView.sizingOptions = [.intrinsicContentSize]
         }
         panel.contentView = StatusPanelContentView(hostingView: hostingView)
         panel.delegate = self
@@ -275,6 +282,8 @@ final class StatusItemController: NSObject, NSWindowDelegate {
         return windowSize
     }
 
+    /// `PanelSizeSink` calls this outside SwiftUI's layout pass, so measuring
+    /// and resizing here can't re-enter layout.
     private func contentSizeDidChange(_ size: CGSize) {
         guard size.width > 1, size.height > 1,
               abs(size.width - windowSize.width) > 0.5 || abs(size.height - windowSize.height) > 0.5
@@ -282,6 +291,23 @@ final class StatusItemController: NSObject, NSWindowDelegate {
         windowSize = size
         log.debug("Content size \(size.width, privacy: .public)×\(size.height, privacy: .public)")
         if isShown { reposition() }
+    }
+
+    /// Repositions on the next turn of the main queue, once however many
+    /// changes arrive first. Screen and item-window notifications can arrive
+    /// while AppKit is still rearranging windows (a display change moves the
+    /// menu bar and its items), and `reposition` may re-measure the hosting
+    /// view and resize the panel, which must not happen inside a layout pass.
+    private func setNeedsReposition() {
+        guard !repositionQueued else { return }
+        repositionQueued = true
+        DispatchQueue.main.async { [weak self] in
+            MainActor.assumeIsolated {
+                guard let self else { return }
+                self.repositionQueued = false
+                if self.isShown { self.reposition() }
+            }
+        }
     }
 
     /// The status item button in screen coordinates, if it is on screen.
@@ -430,7 +456,7 @@ final class StatusItemController: NSObject, NSWindowDelegate {
             // Items shift when others appear or change width.
             for name in [NSWindow.didMoveNotification, NSWindow.didChangeScreenNotification] {
                 observers.append(center.addObserver(forName: name, object: buttonWindow, queue: .main) { [weak self] _ in
-                    MainActor.assumeIsolated { self?.reposition() }
+                    MainActor.assumeIsolated { self?.setNeedsReposition() }
                 })
             }
         }
@@ -463,7 +489,7 @@ final class StatusItemController: NSObject, NSWindowDelegate {
             requestClose(animated: false)
             return
         }
-        reposition()
+        setNeedsReposition()
     }
 
     // MARK: NSWindowDelegate

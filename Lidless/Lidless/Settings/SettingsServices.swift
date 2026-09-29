@@ -46,7 +46,7 @@ struct SettingsActions {
     var openDisplaysSettings: () -> Void = {}
     /// Asks for Input Monitoring when "Keep pressing to boost" is switched on.
     var requestKeyPermission: () -> Void = {}
-    /// Updater (Phase 6 wires Sparkle); no-op until then.
+    /// Opens the latest GitHub release (no built-in updater yet).
     var checkForUpdates: () -> Void = {}
     var openSourceOnGitHub: () -> Void = {}
     /// Input Monitoring for "Keep pressing to boost", read live each call
@@ -54,4 +54,8 @@ struct SettingsActions {
     var keyPermission: () -> InputMonitoringPermission = { .notDetermined }
     /// System Settings › Privacy & Security › Input Monitoring.
     var openInputMonitoringSettings: () -> Void = {}
+    /// How Carbon holds the panic key now (`HotKeyCenter.registrations[.panic]`),
+    /// read live each call; nil before it is registered. Settings › Keys & App
+    /// shows a note when another app shares the keys or they aren't registered.
+    var panicKeyRegistration: () -> HotKeyCenter.Registration? = { nil }
 }

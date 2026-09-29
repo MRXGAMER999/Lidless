@@ -119,10 +119,29 @@ enum PanelMask {
 // MARK: - SwiftUI side
 
 /// Receives the popover's size from SwiftUI.
+///
+/// SwiftUI reports from inside the hosting view's layout pass. Resizing the
+/// window there (or measuring with `layoutSubtreeIfNeeded`) re-enters layout,
+/// which AppKit logs as layout recursion; it happened when a display change
+/// gave the panel a new height limit. So `onChange` runs on the next turn of
+/// the main queue, once, with the latest size.
 final class PanelSizeSink {
     var onChange: ((CGSize) -> Void)?
+    /// The latest size not yet delivered; non-nil while a delivery is queued.
+    private(set) var pendingSize: CGSize?
 
     func report(_ size: CGSize) {
+        let queued = pendingSize != nil
+        pendingSize = size
+        guard !queued else { return }
+        DispatchQueue.main.async { [weak self] in
+            MainActor.assumeIsolated { self?.deliver() }
+        }
+    }
+
+    private func deliver() {
+        guard let size = pendingSize else { return }
+        pendingSize = nil
         onChange?(size)
     }
 }

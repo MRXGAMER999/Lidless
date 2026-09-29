@@ -112,6 +112,8 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
 private final class OnboardingWindow: NSWindow {
     /// The boards draw the traffic lights 16 pt from the top, 12 pt tall.
     private static let buttonRowHeight: CGFloat = 44
+    /// A title-bar button layout is waiting for the run loop (`windowButtonsNeedLayout`).
+    private var buttonsLayoutQueued = false
 
     init(rootView: OnboardingView) {
         super.init(
@@ -184,7 +186,20 @@ private final class OnboardingWindow: NSWindow {
     }
 
     @objc private func windowButtonsNeedLayout(_ notification: Notification) {
-        layOutWindowButtons()
+        guard notification.name == NSView.frameDidChangeNotification else {
+            layOutWindowButtons()
+            return
+        }
+        // A button or its container moved inside AppKit's own title-bar layout
+        // pass: moving them again from there can recurse. Lay out once, after it.
+        guard !buttonsLayoutQueued else { return }
+        buttonsLayoutQueued = true
+        RunLoop.main.perform(inModes: [.common]) { [weak self] in
+            MainActor.assumeIsolated {
+                self?.buttonsLayoutQueued = false
+                self?.layOutWindowButtons()
+            }
+        }
     }
 }
 

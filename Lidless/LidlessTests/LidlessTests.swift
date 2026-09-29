@@ -195,6 +195,24 @@ struct StatusPanelHostingTests {
         #expect(window.frame.size == PopoverMetrics.defaultWindowSize)
     }
 
+    /// Reports arrive inside SwiftUI's layout pass; the sink hands them on a
+    /// turn later, once, with the latest size, so the window is never resized
+    /// (and the view never re-measured) while it is being laid out.
+    @Test func `size reports leave the layout pass and coalesce`() async throws {
+        let sink = PanelSizeSink()
+        var reported: [CGSize] = []
+        sink.onChange = { reported.append($0) }
+        sink.report(CGSize(width: 10, height: 20))
+        sink.report(CGSize(width: 10, height: 30))
+        #expect(reported.isEmpty)
+        #expect(sink.pendingSize == CGSize(width: 10, height: 30))
+        for _ in 0..<40 where reported.isEmpty {
+            try await Task.sleep(nanoseconds: 5_000_000)
+        }
+        #expect(reported == [CGSize(width: 10, height: 30)])
+        #expect(sink.pendingSize == nil)
+    }
+
     /// Controls such as Button, Toggle and Slider stopped `onPreferenceChange`
     /// from ever reporting a real size; the reporter must keep working with them.
     @Test func `size reports follow content with controls`() async throws {

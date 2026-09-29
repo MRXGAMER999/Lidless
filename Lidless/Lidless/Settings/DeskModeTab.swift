@@ -718,6 +718,15 @@ private struct SafetyNetCard: View {
     @ObservedObject var deskMode: DeskModeStore
     let testSafetyNet: () -> Void
 
+    private static let itemCount = 3
+
+    private var unplugTitle: Text { Text("Unplug everything, it comes back", comment: "Safety net item 1 title") }
+    private var unplugDetail: Text { Text("Also checked at wake and login.", comment: "Safety net item 1 helper") }
+    private var alwaysBadge: Text { Text("Always", comment: "Badge: this safety net item is always on and can't be turned off") }
+    private var askTitle: Text { Text("Ask before keeping it off", comment: "Safety net item 2 title") }
+    private var askDetail: Text { Text("No answer in 15 seconds? It turns back on.", comment: "Safety net item 2 helper") }
+    private var panicTitle: Text { Text("Panic key", comment: "Safety net item 3 title") }
+
     var body: some View {
         // As tall as the grid row (CSS grid items stretch).
         SettingsCard(spacing: 12, fillsHeight: true) {
@@ -735,38 +744,46 @@ private struct SafetyNetCard: View {
                 .foregroundStyle(Palette.text4)
                 .lineBox(.description, lineHeight: 1.4)
                 .fixedSize(horizontal: false, vertical: true)
+            // VoiceOver reads each item as one numbered line ("1 of 3: …"), the
+            // helper as its hint, as the switch in item 2 does.
             SafetyNetRow(number: 1) {
-                SafetyNetText(
-                    title: Text("Unplug everything, it comes back", comment: "Safety net item 1 title"),
-                    detail: Text("Also checked at wake and login.", comment: "Safety net item 1 helper")
-                )
-                Badge(text: Text("Always", comment: "Badge: this safety net item is always on and can't be turned off"), style: .locked)
+                SafetyNetText(title: unplugTitle, detail: unplugDetail)
+                Badge(text: alwaysBadge, style: .locked)
             }
-            .accessibilityElement(children: .combine)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Self.numbered(1, unplugTitle))
+            .accessibilityValue(alwaysBadge)
+            .accessibilityHint(unplugDetail)
             SafetyNetRow(number: 2) {
-                SafetyNetText(
-                    title: Text("Ask before keeping it off", comment: "Safety net item 2 title"),
-                    detail: Text("No answer in 15 seconds? It turns back on.", comment: "Safety net item 2 helper")
-                )
-                .accessibilityHidden(true)
+                SafetyNetText(title: askTitle, detail: askDetail)
+                    .accessibilityHidden(true)
                 Toggle(isOn: $preferences.deskMode.askBeforeKeeping) {
-                    Text("Ask before keeping it off", comment: "Safety net item 2 title")
+                    Self.numbered(2, askTitle)
                 }
                 .toggleStyle(PillToggleStyle(size: .small))
-                .accessibilityHint(Text("No answer in 15 seconds? It turns back on.", comment: "Safety net item 2 helper"))
+                .accessibilityHint(askDetail)
             }
             SafetyNetRow(number: 3) {
                 VStack(alignment: .leading, spacing: 6) {
-                    SafetyNetTitle(text: Text("Panic key", comment: "Safety net item 3 title"))
+                    SafetyNetTitle(text: panicTitle)
                     KeyCombo(keys: deskMode.panicKeys, size: .medium)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .accessibilityElement(children: .combine)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Self.numbered(3, panicTitle))
+            .accessibilityValue(Text(verbatim: deskMode.panicKeys.spokenName))
             // CSS `margin-top: auto`: the button sits at the bottom of the card.
             Spacer(minLength: 0)
             SafetyNetTestButton(state: deskMode.state, action: testSafetyNet)
         }
+    }
+}
+
+extension SafetyNetCard {
+    /// VoiceOver's name for a numbered item, e.g. "2 of 3: Ask before keeping it off".
+    static func numbered(_ number: Int, _ title: Text) -> Text {
+        Text("\(number) of \(itemCount): \(title)", comment: "VoiceOver label of a numbered Safety net item in Settings: its place in the list of three, then its title, e.g. “2 of 3: Ask before keeping it off”")
     }
 }
 

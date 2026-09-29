@@ -20,6 +20,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var brightnessKeys: BrightnessKeyTap?
     private var signalRestorer: SignalRestorer?
     private var notifier: UserNotifier?
+    /// Warns about other display utilities that fight Lidless; only a normal launch has one.
+    private var conflictMonitor: ConflictingAppMonitor?
     /// First run, but the system launched Lidless for something else (a
     /// Shortcut, restored state): onboarding waits until the user comes to it.
     private var onboardingDeferred = false
@@ -158,6 +160,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         systemController = system
         deskModeController = deskMode
         boostController = boost
+        let conflictMonitor = ConflictingAppMonitor(model: model, notifier: notifier)
+        conflictMonitor.start()
+        self.conflictMonitor = conflictMonitor
         if case let .unconfirmed(displayID, uuid, method) = recovery {
             // With the displays read, the machine retries until the panel is back.
             deskMode.resumeRestore(displayID: displayID, uuid: uuid, method: method)
@@ -293,10 +298,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 // Starts the tap at once if the grant already stands.
                 self?.boostController?.updateKeyTap()
             },
-            checkForUpdates: { [weak self] in self?.log.info("Check for updates: no updater until Phase 6") },
+            checkForUpdates: { Self.openLatestRelease() },
             openSourceOnGitHub: { Self.openSourceOnGitHub() },
             keyPermission: { [weak self] in self?.brightnessKeys?.permission ?? .notDetermined },
-            openInputMonitoringSettings: { Self.openInputMonitoringSettings() }
+            openInputMonitoringSettings: { Self.openInputMonitoringSettings() },
+            panicKeyRegistration: { [weak self] in self?.hotKeys?.registrations[.panic] }
         )
     }
 
@@ -328,6 +334,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private static func openSourceOnGitHub() {
         guard let url = URL(string: "https://github.com/MRXGAMER999/Lidless") else { return }
+        NSWorkspace.shared.open(url)
+    }
+
+    /// No built-in updater yet: the latest release on GitHub.
+    private static func openLatestRelease() {
+        guard let url = URL(string: "https://github.com/MRXGAMER999/Lidless/releases/latest") else { return }
         NSWorkspace.shared.open(url)
     }
 

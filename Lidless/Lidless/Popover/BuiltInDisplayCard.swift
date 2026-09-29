@@ -45,6 +45,9 @@ private struct BuiltInTitleRow: View {
     @ObservedObject var brightness: BrightnessStore
     let deskModeOn: Bool
 
+    @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
+    @Environment(\.locale) private var locale
+
     var body: some View {
         let scale = brightness.effectiveScale
         let boosted = !deskModeOn && scale.isBoosted(brightness.position)
@@ -55,20 +58,37 @@ private struct BuiltInTitleRow: View {
                 .lidlessStyle(.bodyStrong)
                 .foregroundStyle(Palette.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)
+            // Only gold marks a boosted readout; with Differentiate Without
+            // Colour a flame says it too. Not designed.
+            if differentiateWithoutColor && boosted {
+                GlyphView(glyph: .flame, size: 14, lineWidth: 2)
+                    .foregroundStyle(Palette.goldDeep)
+            }
             readout(percent: scale.displayPercent(brightness.position))
                 .lidlessStyle(.readout)
                 .monospacedDigit()
                 .foregroundStyle(deskModeOn ? Palette.readoutOff : (boosted ? Palette.goldDeep : Palette.textPrimary))
                 .lineBox(.readout, lineHeight: CanvasLine.readout)
+                .accessibilityLabel(accessibilityReadout(scale: scale))
         }
+        // "Built-in Display, 160%, Boost": one stop, and a heading for the rotor.
         .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(.isHeader)
+    }
+
+    private func accessibilityReadout(scale: BrightnessScale) -> Text {
+        deskModeOn
+            ? offReadout
+            : Text(verbatim: BrightnessAccessibility.readout(position: brightness.position, scale: scale, locale: locale))
     }
 
     private func readout(percent: Int) -> Text {
+        deskModeOn ? offReadout : Text(percent, format: .percent)
+    }
+
+    private var offReadout: Text {
         // Its own key, so translators can word a dark screen apart from Desk Mode's "Off".
-        deskModeOn
-            ? Text(String(localized: "BuiltInDisplay.Readout.Off", defaultValue: "Off", comment: "Readout at the right of the built-in display card's title while Desk Mode has switched the screen off (in place of a percentage). Describes the screen, not a setting."))
-            : Text(percent, format: .percent)
+        Text(String(localized: "BuiltInDisplay.Readout.Off", defaultValue: "Off", comment: "Readout at the right of the built-in display card's title while Desk Mode has switched the screen off (in place of a percentage). Describes the screen, not a setting."))
     }
 }
 
@@ -76,6 +96,7 @@ private struct BuiltInBrightnessControls: View {
     @ObservedObject var brightness: BrightnessStore
     @ObservedObject var boost: BoostStatusStore
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.locale) private var locale
 
     var body: some View {
         let scale = brightness.effectiveScale
@@ -94,7 +115,8 @@ private struct BuiltInBrightnessControls: View {
                     let boostedNits = Self.boostNits(status: boost.status, scale: scale) ?? nits
                     Callout(
                         glyph: .flame,
-                        message: Text("**Boost on · ≈ \(boostedNits, format: .number) nits.** Uses more battery and heat. Steps back by itself if your Mac gets hot.", comment: "Boost callout in the popover; the variable is the estimated brightness in nits")
+                        message: Text("**Boost on · ≈ \(boostedNits, format: .number) nits.** Uses more battery and heat. Steps back by itself if your Mac gets hot.", comment: "Boost callout in the popover; the variable is the estimated brightness in nits"),
+                        accessibilityMessage: Text(verbatim: BrightnessAccessibility.boostOnCallout(nits: boostedNits, locale: locale))
                     )
                 }
                 HStack(spacing: 8) {
@@ -115,6 +137,8 @@ private struct BuiltInBrightnessControls: View {
                     .lidlessStyle(.small)
                     .foregroundStyle(Palette.text3)
                     .lineBox(.small, lineHeight: CanvasLine.small)
+                    // "About 350 nits" rather than "almost equal to 350 nits, middle dot".
+                    .accessibilityLabel(Text(verbatim: BrightnessAccessibility.hint(nits: nits, canBoost: scale.canBoost, locale: locale)))
             }
         }
     }

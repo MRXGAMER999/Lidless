@@ -1,0 +1,39 @@
+/*
+  App Shortcut phrases for Siri and Spotlight (LidlessShortcuts.swift).
+
+  macOS 12 and 13 can't read AppShortcuts.xcstrings (Xcode refuses it below a
+  macOS 14 deployment target), so the phrases are localized with this .strings
+  table: copy it to <language>.lproj/AppShortcuts.strings and translate the
+  right-hand side. Each key must match a phrase in LidlessShortcuts.swift
+  exactly, or the build fails.
+
+  ${applicationName} becomes the app's name, Lidless: keep it in every phrase or
+  Siri drops the phrase. ${isOn} becomes "on" or "off" (the Boost setting's
+  On/Off names in Localizable.xcstrings); keep it. Keep phrases short and
+  speakable. Shipped phrases are a contract with people's habits: add new ones
+  rather than rewording old ones.
+*/
+
+/* Turns Desk Mode on (the MacBook's built-in screen goes off, external displays stay on). */
+"Turn on Desk Mode in ${applicationName}" = "Turn on Desk Mode in ${applicationName}";
+"Start Desk Mode with ${applicationName}" = "Start Desk Mode with ${applicationName}";
+
+/* Turns Desk Mode off (the built-in screen comes back). */
+"Turn off Desk Mode in ${applicationName}" = "Turn off Desk Mode in ${applicationName}";
+"Stop Desk Mode with ${applicationName}" = "Stop Desk Mode with ${applicationName}";
+
+/* Switches Desk Mode on if it's off, off if it's on. */
+"Toggle Desk Mode in ${applicationName}" = "Toggle Desk Mode in ${applicationName}";
+"Switch Desk Mode with ${applicationName}" = "Switch Desk Mode with ${applicationName}";
+
+/* Works like the panic key: brings the built-in screen back right away. */
+"Turn the built-in display back on with ${applicationName}" = "Turn the built-in display back on with ${applicationName}";
+"Bring my screen back with ${applicationName}" = "Bring my screen back with ${applicationName}";
+
+/* Turns Brightness Boost (Lidless's extra-brightness feature) on or off; the second phrase turns it on. */
+"Turn Brightness Boost ${isOn} in ${applicationName}" = "Turn Brightness Boost ${isOn} in ${applicationName}";
+"Boost my screen with ${applicationName}" = "Boost my screen with ${applicationName}";
+
+/* Says whether Desk Mode is on. */
+"Is Desk Mode on in ${applicationName}" = "Is Desk Mode on in ${applicationName}";
+"Get Desk Mode state in ${applicationName}" = "Get Desk Mode state in ${applicationName}";
