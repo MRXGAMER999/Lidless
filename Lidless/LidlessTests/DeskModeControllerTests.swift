@@ -64,6 +64,11 @@ struct DeskModeControllerTests {
         rig.builtIn.finishDisable(true)
         #expect(rig.log.take() == [.deadline(1_015), .show(deadline: 1_015, total: 15, onDisplayUUID: lgUUID)])
         #expect(rig.model.deskMode.state == .on(since: DeskModeRig.since, trigger: .manual))
+        // The disconnect takes the built-in out of the list. Without this reading
+        // the machine would still see the panel online once the settle time is
+        // over, and stand down as if a lid cycle had brought it back.
+        rig.controller.displaysDidChange(facts: DeskModeRig.builtInOff, lid: .open, power: .adapter)
+        #expect(rig.log.take() == [])
 
         rig.advance(4)
         rig.confirmation.pressKeep()

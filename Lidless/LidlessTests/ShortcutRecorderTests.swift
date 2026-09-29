@@ -50,8 +50,9 @@ private struct Harness {
         recorder = ShortcutRecorderModel(
             monitor: monitor.monitor,
             notificationCenter: notifications,
-            // A QWERTY stand-in: K, B, D, = and nothing else.
-            layoutLabel: { code, _ in [0x28: "k", 0x0B: "b", 0x02: "d", 0x18: "="][code] },
+            // A QWERTY stand-in: K, B, D, Q, = and nothing else. A key it can't
+            // name is ignored, so every key a test presses must be here.
+            layoutLabel: { code, _ in [0x28: "k", 0x0B: "b", 0x02: "d", 0x0C: "q", 0x18: "="][code] },
             displayLabel: { $0.keyLabel },
             observesKeyboardLayout: false,
             announce: { log.announcements.append($0) }

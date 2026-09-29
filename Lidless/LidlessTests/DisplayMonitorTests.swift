@@ -25,9 +25,19 @@ private enum OnlineDisplays {
         ids().contains { CGDisplayIsBuiltin($0) == 1 }
     }
 
-    /// Not built in, and CoreDisplay calls it neither virtual nor AirPlay.
+    /// Running in a virtual machine (a CI runner): its displays are the
+    /// hypervisor's, which CoreDisplay doesn't flag as virtual.
+    static var isVirtualMachine: Bool {
+        var present: Int32 = 0
+        var size = MemoryLayout<Int32>.size
+        return sysctlbyname("kern.hv_vmm_present", &present, &size, nil, 0) == 0 && present == 1
+    }
+
+    /// Not built in, and CoreDisplay calls it neither virtual nor AirPlay, on
+    /// a real Mac: a VM's display passes those flags without being a monitor.
     static var hasWiredExternal: Bool {
-        ids().contains { id in
+        guard !isVirtualMachine else { return false }
+        return ids().contains { id in
             guard CGDisplayIsBuiltin(id) != 1, let info = info(id) else { return false }
             return !DisplayReadingHelpers.flag(info, DisplayReadingHelpers.InfoKey.isVirtualDevice)
                 && !DisplayReadingHelpers.flag(info, DisplayReadingHelpers.InfoKey.isAirPlay)
@@ -67,7 +77,7 @@ struct LiveDisplayReaderTests {
         #expect(builtIn.nativePixelHeight == height)
     }
 
-    @Test(.enabled(if: OnlineDisplays.hasWiredExternal))
+    @Test(.enabled(if: OnlineDisplays.hasWiredExternal, "Needs a monitor on a cable, on a real Mac"))
     func `external monitors are physical`() throws {
         let externals = reader.snapshot().filter { !$0.isBuiltIn && !$0.isVirtualDevice && !$0.isAirPlay }
         try #require(!externals.isEmpty)
@@ -254,8 +264,14 @@ struct DisplayChangeMonitorTests {
 
     private var uptime: TimeInterval { ProcessInfo.processInfo.systemUptime }
 
+    /// The ceiling is far off here, so the change can only come from the quiet
+    /// time: a late main thread (other suites run beside this one) delays it
+    /// without turning it into a ceiling fire or a failure.
     @Test func `screen-parameter posts coalesce into one change`() async throws {
-        let monitor = makeMonitor()
+        let monitor = DisplayChangeMonitor(
+            center: center, workspaceCenter: workspaceCenter,
+            schedule: RefreshSchedule(quiet: 0.3, maxWait: 10)
+        )
         let log = ChangeLog()
         var lastPost: TimeInterval = 0
         try await confirmation(expectedCount: 1) { changed in
@@ -265,11 +281,18 @@ struct DisplayChangeMonitorTests {
             }
             for _ in 0..<3 { postScreenParameters() }
             lastPost = uptime
-            try await Task.sleep(for: .seconds(1.2))
+            // Until the change, then a quiet time more for a second one.
+            let deadline = lastPost + 8
+            while log.times.isEmpty, uptime < deadline {
+                try await Task.sleep(for: .milliseconds(20))
+            }
+            try await Task.sleep(for: .milliseconds(600))
             monitor.stop()
         }
         let delay = try #require(log.times.first) - lastPost
-        #expect(delay >= 0.25 && delay < 1.0)
+        // Waited out the quiet time, and fired on it, not on the ceiling.
+        #expect(delay >= 0.25)
+        #expect(delay < 8)
     }
 
     @Test func `a steady stream still fires within maxWait`() async throws {

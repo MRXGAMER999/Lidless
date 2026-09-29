@@ -19,7 +19,7 @@ struct AppIntentBridgeTests {
             try? await Task.sleep(nanoseconds: 30_000_000)
             slot.bridge = rig.bridge
         }
-        let found = await AppIntentBridge.current(waitingUpTo: 2, pollInterval: 0.01, lookup: { slot.bridge })
+        let found = await AppIntentBridge.current(waitingUpTo: 10, pollInterval: 0.01, lookup: { slot.bridge })
         #expect(found === rig.bridge)
     }
 
@@ -106,7 +106,7 @@ struct AppIntentBridgeTests {
     }
 
     @Test func `a screen still switching after the wait is reported, not hidden`() async {
-        let rig = BridgeRig()
+        let rig = BridgeRig(deskModeSettle: BridgeRig.shortSettle)
         rig.simulateController(landsOn: nil)
 
         #expect(await rig.bridge.turnDeskMode(on: true) == .stillSwitching(toOn: true))
@@ -205,7 +205,7 @@ struct AppIntentBridgeTests {
     }
 
     @Test func `panic reports a screen that hasn't come back yet`() async {
-        let rig = BridgeRig(state: .on(since: .now, trigger: .manual))
+        let rig = BridgeRig(state: .on(since: .now, trigger: .manual), deskModeSettle: BridgeRig.shortSettle)
         rig.panicker.onPanic = { rig.model.deskMode.update(.switching(toOn: false)) }
 
         #expect(await rig.bridge.panic() == .stillSwitching(toOn: false))
@@ -365,9 +365,16 @@ final class FakeBoostToggle: BoostToggling {
     }
 }
 
-/// A model with real stores, the two fake controllers and short waits.
+/// A model with real stores and the two fake controllers.
+///
+/// A switch the fake controller lands ends the bridge's wait at once, so that
+/// wait is long: all the app-hosted tests share the main actor, and on a busy
+/// CI machine a landing 30 ms away can run well over a second late. Only the
+/// tests that expect "still switching" wait out a short one.
 @MainActor
 final class BridgeRig {
+    static let shortSettle: TimeInterval = 0.3
+
     let model: AppModel
     let panicker = FakePanicker()
     let booster = FakeBoostToggle()
@@ -383,7 +390,8 @@ final class BridgeRig {
         boostAllowed: Bool = true,
         boostStatus: BoostStatus = .off,
         controllers: Bool = true,
-        onboarded: Bool = true
+        onboarded: Bool = true,
+        deskModeSettle: TimeInterval = 10
     ) {
         model = AppModel(
             deskMode: DeskModeStore(state: state, keyLabel: { _ in "B" }),
@@ -396,7 +404,7 @@ final class BridgeRig {
             model: model,
             deskMode: controllers ? panicker : nil,
             boost: controllers ? booster : nil,
-            timing: .init(deskModeSettle: 0.5, boostSettle: 0.1, pollInterval: 0.01)
+            timing: .init(deskModeSettle: deskModeSettle, boostSettle: 0.1, pollInterval: 0.01)
         )
     }
 

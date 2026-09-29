@@ -33,8 +33,11 @@ struct PopoverAccessibilityTests {
 
     @Test func `values follow the locale`() {
         let value = BrightnessAccessibility.sliderValue(position: 150, scale: scale, locale: Locale(identifier: "de_DE"))
-        #expect(value.contains("1.000"))
-        #expect(value.contains("200 %"))
+        // German puts a no-break space (U+00A0, or U+202F in some ICU versions)
+        // before the percent sign: compare with plain spaces.
+        let spaced = String(value.map { $0 == "\u{00A0}" || $0 == "\u{202F}" ? " " : $0 })
+        #expect(spaced.contains("1.000"))
+        #expect(spaced.contains("200 %"))
     }
 
     @Test func `hint and callout drop the approximately sign`() {
