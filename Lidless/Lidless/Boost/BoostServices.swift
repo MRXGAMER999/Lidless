@@ -7,6 +7,10 @@ import LidlessCore
 // the main actor. Frozen contract for Phase 4.
 
 /// The EDR multiply overlay on the built-in screen.
+extension BoostOverlay {
+    func setHeadroomRequest(_ factor: Double) {}
+}
+
 protocol BoostOverlay: AnyObject {
     /// Puts the overlay on the screen of `displayID` (if not already there) and
     /// ramps its factor to `factor` over `rampSeconds`. Returns false when the
@@ -14,6 +18,9 @@ protocol BoostOverlay: AnyObject {
     func show(on displayID: CGDirectDisplayID, factor: Double, rampSeconds: Double) -> Bool
     /// Ramps to 1 over `rampSeconds` (0 = at once), then removes the window.
     func hide(rampSeconds: Double)
+    /// The factor Boost is heading for, so the engine can ask macOS for that
+    /// headroom at once rather than only for the factor on screen.
+    func setHeadroomRequest(_ factor: Double)
     var isShown: Bool { get }
     /// The screen's `maximumExtendedDynamicRangeColorComponentValue` while shown:
     /// after every screen-parameter change and on a light poll (1 s, 0.1 s while engaging).

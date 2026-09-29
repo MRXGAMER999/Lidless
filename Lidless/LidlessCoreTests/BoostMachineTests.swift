@@ -11,7 +11,8 @@ private struct Rig {
     var machine: BoostMachine
     var now: TimeInterval = 1000
 
-    init(_ configuration: BoostMachine.Configuration = .init()) {
+    /// Most tests follow the headroom from the start; the hold has its own tests.
+    init(_ configuration: BoostMachine.Configuration = .init(headroomHold: 0)) {
         machine = BoostMachine(configuration: configuration)
     }
 
@@ -89,6 +90,40 @@ struct BoostMachineTests {
         var rig = Rig()
         #expect(rig.request(1.5) == [.show(factor: 1, rampSeconds: Rig.ramp), .publish(.engaging)])
         #expect(rig.machine.needsTicks)
+    }
+
+    @Test func `the engine asks for the ceiling whatever the slider`() {
+        var rig = Rig()
+        rig.request(1.2)
+        #expect(rig.machine.wantedFactor == BoostMachine.Configuration().maxFactor)
+        rig.request(3)
+        #expect(rig.machine.wantedFactor == BoostMachine.Configuration().maxFactor)
+    }
+
+    @Test func `with a hold the factor stays 1 until the headroom is all there`() {
+        var rig = Rig(.init(headroomHold: 4))
+        rig.request(1.5)
+        rig.now += 0.1
+        // Spare headroom at normal brightness: not yet what was asked for.
+        #expect(!rig.headroom(1.2).contains { if case .show(let f, _) = $0 { f > 1 } else { false } })
+        rig.run(for: 1)
+        rig.headroom(1.5)
+        rig.run(for: 1)
+        #expect(rig.status == .engaging)
+        let commands = rig.headroom(1.77) + rig.run(for: 0.5)
+        #expect(commands.contains(.show(factor: 1.5, rampSeconds: Rig.ramp)))
+        #expect(rig.status == .on(factor: 1.5))
+    }
+
+    @Test func `the hold gives up after its time and follows the headroom`() {
+        var rig = Rig(.init(headroomHold: 4))
+        rig.request(1.5)
+        rig.now += 0.1
+        rig.headroom(1.3)
+        let early = rig.run(for: 3.5)
+        #expect(!early.contains { if case .show(let f, _) = $0 { f > 1 } else { false } })
+        let late = rig.run(for: 1)
+        #expect(late.contains(.show(factor: 0.98 * 1.3, rampSeconds: Rig.ramp)))
     }
 
     @Test func `while engaging the factor follows 98 percent of the rising headroom`() {

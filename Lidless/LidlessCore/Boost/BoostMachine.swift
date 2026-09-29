@@ -49,6 +49,10 @@ public enum BoostStatus: Sendable, Equatable {
 ///   reports headroom for the overlay that is up, the factor is 1 (the overlay
 ///   is up and asks macOS for EDR, but multiplies by 1), then it follows
 ///   0.98 × headroom as macOS ramps it (phase4-research.md §5.1).
+/// - While engaging, the factor stays 1 until the headroom reaches
+///   `wantedFactor` (what the engine asks macOS for) or `headroomHold` runs out, then ramps up once. Following macOS's headroom
+///   ramp step by step made the screen go bright, dip while macOS moved the
+///   backlight, then bright again (M5 Pro, macOS 27).
 /// - `engaging` → `on` when the reported headroom reaches the (capped) request
 ///   minus 0.02 and the factor is visible (see below). At `engageTimeout` it is
 ///   `on` if the factor is above 1.01 (or the whole of a smaller request);
@@ -111,8 +115,13 @@ public struct BoostMachine: Sendable, Equatable {
         /// out twice within this.
         public var noticeCooldown: TimeInterval
 
-        public init(maxFactor: Double = 1.67, engageTimeout: TimeInterval = 10, backoff: TimeInterval = 30, maxStrikes: Int = 3, rampSeconds: Double = 0.4, minUpdateInterval: TimeInterval = 0.25, pauseClearHold: TimeInterval = 10, noticeCooldown: TimeInterval = 60) {
+        /// While engaging, how long the factor stays 1 waiting for the headroom
+        /// to reach the target; 0 follows the headroom from the start.
+        public var headroomHold: TimeInterval
+
+        public init(maxFactor: Double = 1.67, headroomHold: TimeInterval = 4, engageTimeout: TimeInterval = 10, backoff: TimeInterval = 30, maxStrikes: Int = 3, rampSeconds: Double = 0.4, minUpdateInterval: TimeInterval = 0.25, pauseClearHold: TimeInterval = 10, noticeCooldown: TimeInterval = 60) {
             self.maxFactor = maxFactor
+            self.headroomHold = headroomHold
             self.engageTimeout = engageTimeout
             self.backoff = backoff
             self.maxStrikes = maxStrikes
@@ -157,6 +166,9 @@ public struct BoostMachine: Sendable, Equatable {
     private var strikes = 0
     /// The latest headroom the engine reported for the overlay that is up.
     private var headroom: Double?
+    /// While engaging: the factor stays 1 until then, unless the headroom
+    /// reaches the target first. Nil once the hold is over.
+    private var holdEndsAt: TimeInterval?
     /// The factor last sent with `.show`; nil while hidden.
     private var shown: Double?
     private var lastShow = -Double.infinity
@@ -247,6 +259,13 @@ public struct BoostMachine: Sendable, Equatable {
         }
     }
 
+    /// The headroom to ask macOS for up front: the ceiling (under the heat
+    /// cap), not just the slider, so dragging further doesn't make macOS move
+    /// the backlight again mid-Boost.
+    public var wantedFactor: Double {
+        max(1, min(configuration.maxFactor, BoostGuard.thermalCap(conditions.thermal, settings: settings)))
+    }
+
     /// The request under the fixed and thermal caps (headroom aside).
     private var target: Double {
         max(1, min(requested, configuration.maxFactor, BoostGuard.thermalCap(conditions.thermal, settings: settings)))
@@ -255,7 +274,7 @@ public struct BoostMachine: Sendable, Equatable {
     /// What the overlay should show: `target` under 0.98 × the reported
     /// headroom, and 1 until headroom is reported.
     private var factor: Double {
-        guard let headroom else { return 1 }
+        guard let headroom, holdEndsAt == nil else { return 1 }
         return max(1, min(target, Self.headroomShare * headroom))
     }
 
@@ -317,8 +336,19 @@ public struct BoostMachine: Sendable, Equatable {
             return
         }
         if case .backoff(let until) = phase, now >= until { phase = .idle }
-        if phase == .idle { phase = .engaging(since: now) }
-        guard case .engaging(let since) = phase else { return }
+        if phase == .idle {
+            phase = .engaging(since: now)
+            holdEndsAt = configuration.headroomHold > 0 ? now + configuration.headroomHold : nil
+        }
+        guard case .engaging(let since) = phase else {
+            holdEndsAt = nil
+            return
+        }
+        // The engine asks macOS for `wantedFactor`: wait for all of it, so
+        // macOS is done moving the backlight before the screen brightens.
+        if let end = holdEndsAt, now >= end || (headroom ?? 0) >= wantedFactor - Self.engageTolerance {
+            holdEndsAt = nil
+        }
         if let headroom, headroom >= target - Self.engageTolerance, isVisible(gain: Self.visibleGain) {
             phase = .on
             strikes = 0

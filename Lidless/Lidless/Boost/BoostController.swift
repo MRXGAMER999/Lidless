@@ -757,6 +757,7 @@ final class BoostController: DeskModeBoostInterlock {
                 pending.append(.engineFailed)
                 return
             }
+            services.overlay.setHeadroomRequest(machine.wantedFactor)
             if !services.overlay.show(on: builtInID, factor: factor, rampSeconds: rampSeconds) {
                 log.error("Couldn't put the Boost overlay up")
                 pending.append(.engineFailed)
